@@ -34,6 +34,7 @@ export default function RegisterForm() {
 		}
 
 		try {
+			// TODO: Add registration API logic.
 			const response = await fetch("/api/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },

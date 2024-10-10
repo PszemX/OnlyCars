@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { IconUpload } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { Trash } from "lucide-react";
