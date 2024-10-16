@@ -12,8 +12,10 @@ import {
 	CardTitle,
 	CardFooter,
 } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
+	const [userName, setUserName] = useState("");
 	const [email, setEmail] = useState("");
 	const [isEmailValid, setIsEmailValid] = useState(true);
 	const [password, setPassword] = useState("");
@@ -23,6 +25,8 @@ export default function RegisterForm() {
 	const [formValid, setFormValid] = useState(false);
 	const [error, setError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
+	const router = useRouter();
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
@@ -34,25 +38,30 @@ export default function RegisterForm() {
 		}
 
 		try {
-			// TODO: Add registration API logic.
-			const response = await fetch("/api/register", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email, password }),
-			});
+			const response = await fetch(
+				"https://localhost:5001/api/user/register",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						userName: userName,
+						email: email,
+						passwordHash: password,
+					}),
+				}
+			);
 
-			const data = await response.json();
-
-			if (response.status === 201) {
-				setSuccessMessage(
-					"Registration successful. Click the link to confirm: " +
-						data.confirmLink
-				);
-			} else {
+			if (!response.ok) {
+				const data = await response.json();
 				throw new Error(data.message || "Registration failed.");
 			}
+
+			setSuccessMessage("Registration successful.");
+			setTimeout(() => {
+				router.push("/login");
+			}, 2000);
 		} catch (err: any) {
-			setError(`Registration error: ${err.message}`);
+			setError(`${err.message}`);
 		}
 	};
 
@@ -102,6 +111,19 @@ export default function RegisterForm() {
 			</CardHeader>
 			<CardContent>
 				<form onSubmit={handleSubmit} className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="userName">User Name</Label>
+						<Input
+							id="userName"
+							type="text"
+							placeholder="Your name"
+							value={userName}
+							onChange={(e) => {
+								setUserName(e.target.value);
+							}}
+							required
+						/>
+					</div>
 					<div className="space-y-2">
 						<Label htmlFor="email">Email</Label>
 						<Input

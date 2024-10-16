@@ -26,25 +26,23 @@ export default function LoginForm() {
 		setError("");
 
 		try {
-			const response = await fetch("/api/login", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email, password }),
-			});
-
-			const data = await response.json();
-
-			console.log("Login response:", data);
+			const response = await fetch(
+				"https://localhost:5001/api/user/login",
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email, password }),
+				}
+			);
 
 			if (response.ok) {
-				console.log("Redirecting to /dashboard");
-				router.push("/dashboard");
+				router.push("/"); // Redirect to dashboard after successful login
 			} else {
-				throw new Error(data.message || "Login error");
+				const data = await response.json();
+				throw new Error(data.message || "Login failed.");
 			}
 		} catch (err: any) {
-			console.error("Login error:", err);
-			setError(err.message);
+			setError(err.message || "An error occurred during login");
 		}
 	};
 
@@ -60,7 +58,7 @@ export default function LoginForm() {
 						<Input
 							id="email"
 							type="email"
-							placeholder="twoj@email.com"
+							placeholder="Your email"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							required
@@ -84,7 +82,7 @@ export default function LoginForm() {
 			</CardContent>
 			<CardFooter className="flex justify-center">
 				<p className="text-sm text-gray-600">
-					Don&apos;t have an account?{" "}
+					{"Don't have an account?"}{" "}
 					<Link
 						href="/register"
 						className="text-blue-600 hover:underline"
