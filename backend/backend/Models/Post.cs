@@ -16,13 +16,9 @@ namespace backend.Models
         public int Price { get; set; }
 
         public int Likes { get; set; } = 0;
+        
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public List<Comment> Comments { get; set; } = new List<Comment>();
-    }
-
-    public class Comment
-    {
-        public string User { get; set; } = null!;
-        public string Text { get; set; } = null!;
+        public List<string> CommentIds { get; set; } = new List<string>();
     }
 }

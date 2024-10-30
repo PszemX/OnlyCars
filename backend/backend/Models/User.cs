@@ -17,6 +17,8 @@ namespace backend.Models
 
         public int TokenBalance { get; set; }
 
-        public List<Post> Posts { get; set; } = new List<Post>();
+        public List<string> PostIds { get; set; } = new List<string>();
+
+        public List<string> PurchasedPostIds { get; set; } = new List<string>();
     }
 }
