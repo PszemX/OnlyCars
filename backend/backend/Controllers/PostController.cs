@@ -15,7 +15,6 @@ namespace backend.Controllers
             _usersCollection = database.GetCollection<User>("Users");
         }
 
-        // Unlock a post using tokens
         [HttpPost("{userId}/unlock/{postId}")]
         public async Task<IActionResult> UnlockPost(string userId, string postId)
         {

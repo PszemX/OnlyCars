@@ -1,4 +1,5 @@
-﻿using backend.Models;
+﻿using backend.Dtos;
+using backend.Models;
 using backend.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,6 @@ namespace backend.Controllers
             _userRepository = userRepository;
         }
 
-        // Get all users
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -24,40 +24,37 @@ namespace backend.Controllers
         }
 
 
-        // Register new user
         [HttpPost("register")]
-        public async Task<IActionResult> Register(User user)
+        public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
         {
-            // Check if the user already exists by email
-            var existingUser = await _userRepository.GetUserByEmailAsync(user.Email);
+            // Check if the email was already used
+            var existingUser = await _userRepository.GetUserByEmailAsync(registrationDto.Email);
             if (existingUser != null)
                 return BadRequest(new { message = "Email already exists." });
 
-            // Check if the user already exists by username
-            var existingUsername = await _userRepository.GetUserByUsernameAsync(user.UserName);
+            // Check if the username is taken
+            var existingUsername = await _userRepository.GetUserByUsernameAsync(registrationDto.UserName);
             if (existingUsername != null)
                 return BadRequest(new { message = "Username already exists." });
 
-            // Hash the password before storing it in the database
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+            var newUser = new User
+            {
+                UserName = registrationDto.UserName,
+                Email = registrationDto.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registrationDto.Password),
+                TokenBalance = 100
+            };
 
-            // Set default token balance for new users
-            user.TokenBalance = 100;
-
-            // Create the user in the database
-            await _userRepository.CreateUserAsync(user);
+            await _userRepository.CreateUserAsync(newUser);
 
             return Ok("Registration successful.");
         }
 
-
-        // Login user
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
             try
             {
-                // Find user by email
                 var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
 
                 // Check if the user exists and the password matches
@@ -74,12 +71,5 @@ namespace backend.Controllers
                 return StatusCode(500, new { message = "An error occurred", details = ex.Message });
             }
         }
-    }
-
-    // DTO (Data Transfer Object) for handling login requests
-    public class UserLoginDto
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
     }
 }
