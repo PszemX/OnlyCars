@@ -100,8 +100,8 @@ namespace backend.Controllers
             return Ok("Post liked.");
         }
 
-        [HttpPost("{postId}/unlock/{userId}")]
-        public async Task<IActionResult> UnlockPost(string userId, string postId)
+        [HttpPost("{postId}/purchase/{userId}")]
+        public async Task<IActionResult> PurchasePost(string userId, string postId)
         {
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");

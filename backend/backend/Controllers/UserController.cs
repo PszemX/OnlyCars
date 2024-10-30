@@ -26,6 +26,14 @@ namespace backend.Controllers
             return Ok(users);
         }
 
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserById(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+            return Ok(user);
+        }
+
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
         {
@@ -84,5 +92,17 @@ namespace backend.Controllers
 
             return Ok(posts);
         }
+
+        [HttpGet("{userId}/purchased")]
+        public async Task<IActionResult> GetPurchasedPosts(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+
+            var posts = await _postsCollection.Find(p => user.PurchasedPostIds.Contains(p.Id)).ToListAsync();
+
+            return Ok(posts);
+        }
+
     }
 }
