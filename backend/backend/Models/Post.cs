@@ -9,19 +9,14 @@ namespace backend.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-        [BsonElement("ImageUrl")]
         public string ImageUrl { get; set; } = null!;
 
-        [BsonElement("Description")]
         public string Description { get; set; } = null!;
 
-        [BsonElement("Price")]
         public int Price { get; set; }
 
-        [BsonElement("Likes")]
         public int Likes { get; set; } = 0;
 
-        [BsonElement("Comments")]
         public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 

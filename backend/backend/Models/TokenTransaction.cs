@@ -9,13 +9,10 @@ namespace backend.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("UserId")]
         public string UserId { get; set; }
 
-        [BsonElement("Amount")]
         public int Amount { get; set; }
 
-        [BsonElement("Date")]
         public DateTime Date { get; set; }
     }
 }
