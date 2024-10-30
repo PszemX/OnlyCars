@@ -11,11 +11,13 @@ namespace backend.Controllers
     {
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Post> _postsCollection;
+        private readonly IMongoCollection<Comment> _commentsCollection;
 
         public PostController(IMongoDatabase database)
         {
             _usersCollection = database.GetCollection<User>("Users");
             _postsCollection = database.GetCollection<Post>("Posts");
+            _commentsCollection = database.GetCollection<Comment>("Comments");
         }
 
         // TODO: Implement JWT authentication to retrieve userId from token claims
@@ -71,6 +73,8 @@ namespace backend.Controllers
                 UserId = userId
             };
 
+            await _commentsCollection.InsertOneAsync(comment);
+
             post.CommentIds.Add(comment.Id);
 
             await _postsCollection.ReplaceOneAsync(p => p.Id == post.Id, post);
@@ -118,6 +122,17 @@ namespace backend.Controllers
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
         
             return Ok("Post unlocked.");
+        }
+
+        [HttpGet("{postId}/comments")]
+        public async Task<IActionResult> GetCommentsByPost(string postId)
+        {
+            var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null) return NotFound("Post not found.");
+
+            var comments = await _commentsCollection.Find(c => post.CommentIds.Contains(c.Id)).ToListAsync();
+
+            return Ok(comments);
         }
     }
 }

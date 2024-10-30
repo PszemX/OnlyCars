@@ -2,6 +2,7 @@
 using backend.Models;
 using backend.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 
 namespace backend.Controllers
 {
@@ -10,10 +11,12 @@ namespace backend.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserRepository _userRepository;
+        private readonly IMongoCollection<Post> _postsCollection;
 
-        public UserController(UserRepository userRepository)
+        public UserController(UserRepository userRepository, IMongoDatabase database)
         {
             _userRepository = userRepository;
+            _postsCollection = database.GetCollection<Post>("Posts");
         }
 
         [HttpGet]
@@ -22,7 +25,6 @@ namespace backend.Controllers
             var users = await _userRepository.GetAllUsersAsync();
             return Ok(users);
         }
-
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
@@ -70,6 +72,17 @@ namespace backend.Controllers
             {
                 return StatusCode(500, new { message = "An error occurred", details = ex.Message });
             }
+        }
+
+        [HttpGet("{userId}/posts")]
+        public async Task<IActionResult> GetPostsByUser(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+
+            var posts = await _postsCollection.Find(p => user.PostIds.Contains(p.Id)).ToListAsync();
+
+            return Ok(posts);
         }
     }
 }
