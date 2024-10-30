@@ -6,7 +6,7 @@ using MongoDB.Driver;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/posts")]
     public class PostController : ControllerBase
     {
         private readonly IMongoCollection<User> _usersCollection;
@@ -18,7 +18,9 @@ namespace backend.Controllers
             _postsCollection = database.GetCollection<Post>("Posts");
         }
 
-        [HttpPost("{userId}/create")]
+        // TODO: Implement JWT authentication to retrieve userId from token claims
+
+        [HttpPost("{userId}")]
         public async Task<IActionResult> CreatePost(string userId, [FromBody] PostCreationDto postDto)
         {
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
@@ -39,7 +41,22 @@ namespace backend.Controllers
             return Ok("Post created.");
         }
 
-        [HttpPost("{userId}/comment/{postId}")]
+        [HttpGet("{postId}")]
+        public async Task<IActionResult> GetPostById(string postId)
+        {
+            var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null) return NotFound("Post not found.");
+            return Ok(post);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllPosts()
+        {
+            var posts = await _postsCollection.Find(_ => true).ToListAsync();
+            return Ok(posts);
+        }
+
+        [HttpPost("{postId}/comment/{userId}")]
         public async Task<IActionResult> AddComment(string userId, string postId, [FromBody] CommentCreationDto commentDto)
         {
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
@@ -61,7 +78,7 @@ namespace backend.Controllers
             return Ok("Comment added.");
         }
 
-        [HttpPost("{userId}/like/{postId}")]
+        [HttpPost("{postId}/like/{userId}")]
         public async Task<IActionResult> LikePost(string userId, string postId)
         {
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
@@ -79,7 +96,7 @@ namespace backend.Controllers
             return Ok("Post liked.");
         }
 
-        [HttpPost("{userId}/unlock/{postId}")]
+        [HttpPost("{postId}/unlock/{userId}")]
         public async Task<IActionResult> UnlockPost(string userId, string postId)
         {
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
