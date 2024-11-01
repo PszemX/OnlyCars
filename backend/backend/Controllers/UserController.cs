@@ -1,7 +1,11 @@
-﻿using backend.Dtos;
+﻿using System.Security.Claims;
+using System.Text;
+using backend.Dtos;
 using backend.Models;
 using backend.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 
 namespace backend.Controllers
@@ -12,13 +16,16 @@ namespace backend.Controllers
     {
         private readonly UserRepository _userRepository;
         private readonly IMongoCollection<Post> _postsCollection;
+        private IConfiguration _config;
 
-        public UserController(UserRepository userRepository, IMongoDatabase database)
+        public UserController(UserRepository userRepository, IMongoDatabase database, IConfiguration config)
         {
             _userRepository = userRepository;
             _postsCollection = database.GetCollection<Post>("Posts");
+            _config = config;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -26,6 +33,7 @@ namespace backend.Controllers
             return Ok(users);
         }
 
+        [Authorize]
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById(string userId)
         {
@@ -34,6 +42,7 @@ namespace backend.Controllers
             return Ok(user);
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
         {
@@ -60,28 +69,39 @@ namespace backend.Controllers
             return Ok("Registration successful.");
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
         {
-            try
-            {
-                var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
+            var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
 
-                // Check if the user exists and the password matches
-                if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            // Check if the user exists and the password matches
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+                return Unauthorized(new { message = "Invalid email or password." });
+
+            var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"] ?? "default_key");
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
                 {
-                    return Unauthorized(new { message = "Invalid email or password." });
-                }
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.UserName)
+                }),
+                Expires = DateTime.UtcNow.AddHours(2),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
 
-                // Placeholder for generating and returning a JWT token (TODO later)
-                return Ok(new { message = "Login successful." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred", details = ex.Message });
-            }
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            return Ok(new { token = tokenString });
         }
 
+        [Authorize]
         [HttpGet("{userId}/posts")]
         public async Task<IActionResult> GetPostsByUser(string userId)
         {
@@ -93,6 +113,7 @@ namespace backend.Controllers
             return Ok(posts);
         }
 
+        [Authorize]
         [HttpGet("{userId}/purchased")]
         public async Task<IActionResult> GetPurchasedPosts(string userId)
         {

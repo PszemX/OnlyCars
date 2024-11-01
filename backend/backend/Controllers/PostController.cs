@@ -1,10 +1,13 @@
-﻿using backend.Dtos;
+﻿using System.Security.Claims;
+using backend.Dtos;
 using backend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 
 namespace backend.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/posts")]
     public class PostController : ControllerBase
@@ -20,11 +23,11 @@ namespace backend.Controllers
             _commentsCollection = database.GetCollection<Comment>("Comments");
         }
 
-        // TODO: Implement JWT authentication to retrieve userId from token claims
-
-        [HttpPost("{userId}")]
-        public async Task<IActionResult> CreatePost(string userId, [FromBody] PostCreationDto postDto)
+        [HttpPost]
+        public async Task<IActionResult> CreatePost([FromBody] PostCreationDto postDto)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine(userId);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
@@ -58,9 +61,10 @@ namespace backend.Controllers
             return Ok(posts);
         }
 
-        [HttpPost("{postId}/comment/{userId}")]
-        public async Task<IActionResult> AddComment(string userId, string postId, [FromBody] CommentCreationDto commentDto)
+        [HttpPost("{postId}/comment")]
+        public async Task<IActionResult> AddComment(string postId, [FromBody] CommentCreationDto commentDto)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
@@ -82,9 +86,10 @@ namespace backend.Controllers
             return Ok("Comment added.");
         }
 
-        [HttpPost("{postId}/like/{userId}")]
-        public async Task<IActionResult> LikePost(string userId, string postId)
+        [HttpPost("{postId}/like")]
+        public async Task<IActionResult> LikePost(string postId)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
@@ -100,9 +105,10 @@ namespace backend.Controllers
             return Ok("Post liked.");
         }
 
-        [HttpPost("{postId}/purchase/{userId}")]
-        public async Task<IActionResult> PurchasePost(string userId, string postId)
+        [HttpPost("{postId}/purchase")]
+        public async Task<IActionResult> PurchasePost(string postId)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
@@ -115,9 +121,7 @@ namespace backend.Controllers
             user.TokenBalance -= post.Price;
 
             if (!user.PurchasedPostIds.Contains(postId))
-            {
                 user.PurchasedPostIds.Add(postId);
-            }
 
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
         
