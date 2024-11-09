@@ -1,78 +1,148 @@
-/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { apiFetch } from "@/lib/utils";
+import { Navbar } from "@/components/navbar/Navbar";
 import { PhotoCard } from "@/components/photo-card/PhotoCard";
-import { FloatingMenu } from "@/components/menu/FloatingMenu";
-import { FollowingMenu } from "@/components/menu/FollowingMenu";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { users } from "@/data/mockUsers";
-import { Navbar } from "@/components/navbar/Navbar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function UserProfile({
 	params,
 }: {
 	params: { userName: string };
 }) {
-	const [tokenBalance, setTokenBalance] = useState(100);
-	const [unlockedImages, setUnlockedImages] = useState<number[]>([]);
-	const [likedPosts, setLikedPosts] = useState<number[]>([]);
+	const authenticated = useAuth();
+	const [userProfile, setUserProfile] = useState<any>(null);
+	const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+	const [tokenBalance, setTokenBalance] = useState(0);
+	const [unlockedImages, setUnlockedImages] = useState<string[]>([]);
+	const [likedPosts, setLikedPosts] = useState<string[]>([]);
 	const [following, setFollowing] = useState<string[]>([]);
 	const { toast } = useToast();
+	const router = useRouter();
 
-	const currentUser = users.find((user) => user.name === params.userName);
+	useEffect(() => {
+		if (authenticated) {
+			// Fetch current user data
+			apiFetch("https://localhost:5001/api/users/current")
+				.then((userData) => {
+					setTokenBalance(userData.tokenBalance);
+					setFollowing(userData.followingUserIds || []);
+					setLikedPosts(userData.likedPostIds || []);
+					setUnlockedImages(userData.purchasedPostIds || []);
+					setCurrentUserId(userData.id);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [authenticated]);
 
-	if (!currentUser) {
-		return <p>User not found</p>;
+	useEffect(() => {
+		if (authenticated) {
+			// Fetch the profile data of the user
+			apiFetch(
+				`https://localhost:5001/api/users/profile/${params.userName}`
+			)
+				.then((data) => {
+					setUserProfile(data);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [authenticated, params.userName]);
+
+	if (!authenticated) {
+		return null;
 	}
 
-	const unlockImage = (postId: number, price: number) => {
-		if (tokenBalance >= price) {
-			setTokenBalance((prev) => prev - price);
-			setUnlockedImages((prev) => [...prev, postId]);
+	if (!userProfile) {
+		return <div>Loading...</div>;
+	}
+
+	const isFollowingUser = following.includes(userProfile.id);
+	const isOwnProfile = userProfile.id === currentUserId;
+
+	const handleToggleFollow = async () => {
+		try {
+			if (isFollowingUser) {
+				await apiFetch(
+					`https://localhost:5001/api/users/${userProfile.id}/unfollow`,
+					{
+						method: "POST",
+					}
+				);
+				setFollowing((prev) =>
+					prev.filter((userId) => userId !== userProfile.id)
+				);
+			} else {
+				await apiFetch(
+					`https://localhost:5001/api/users/${userProfile.id}/follow`,
+					{
+						method: "POST",
+					}
+				);
+				setFollowing((prev) => [...prev, userProfile.id]);
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleUnlockImage = async (postId: string, price: number) => {
+		try {
+			const response = await apiFetch(
+				`https://localhost:5001/api/posts/${postId}/purchase`,
+				{
+					method: "POST",
+				}
+			);
+
+			if (response.message === "Post unlocked.") {
+				setUnlockedImages((prev) => [...prev, postId]);
+				setTokenBalance((prev) => prev - price);
+				toast({
+					title: "Image Unlocked!",
+					description: `You've successfully unlocked the image for ${price} tokens.`,
+					duration: 3000,
+				});
+			} else {
+				throw new Error(response.message || "Unable to unlock image.");
+			}
+		} catch (error: any) {
 			toast({
-				title: "Image Unlocked!",
-				description: `You've successfully unlocked the image for ${price} tokens.`,
-				duration: 3000,
-			});
-		} else {
-			toast({
-				title: "Insufficient Tokens",
-				description: `You need ${
-					price - tokenBalance
-				} more tokens to unlock this image.`,
+				title: "Error",
+				description: error.message || "An error occurred.",
 				variant: "destructive",
 				duration: 3000,
 			});
 		}
 	};
 
-	const toggleLike = (postId: number) => {
-		setLikedPosts((prev) =>
-			prev.includes(postId)
-				? prev.filter((id) => id !== postId)
-				: [...prev, postId]
-		);
+	const handleLikePost = async (postId: string) => {
+		try {
+			await apiFetch(`https://localhost:5001/api/posts/${postId}/like`, {
+				method: "POST",
+			});
+			setLikedPosts((prev) =>
+				prev.includes(postId)
+					? prev.filter((id) => id !== postId)
+					: [...prev, postId]
+			);
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
-	const toggleFollow = (username: string) => {
-		setFollowing((prev) =>
-			prev.includes(username)
-				? prev.filter((name) => name !== username)
-				: [...prev, username]
-		);
-	};
-
-	const purchaseTokens = () => {
-		const amount = 100;
-		setTokenBalance((prev) => prev + amount);
-		toast({
-			title: "Tokens Purchased!",
-			description: `You've successfully purchased ${amount} tokens.`,
-			duration: 3000,
-		});
+	const handlePurchaseTokens = () => {
+		router.push("/buy-tokens");
 	};
 
 	return (
@@ -81,45 +151,64 @@ export default function UserProfile({
 				<div className="flex-grow overflow-y-auto">
 					<Navbar
 						tokenBalance={tokenBalance}
-						onPurchaseTokens={purchaseTokens}
+						onPurchaseTokens={handlePurchaseTokens}
 					/>
 
 					<main className="container mx-auto px-4 py-8 max-w-2xl">
 						<div className="flex flex-col items-center mb-8 text-center">
 							<div className="avatar w-32 h-32 mb-4">
-								<img
-									src={currentUser.avatar}
-									alt={currentUser.name}
-								/>
+								<Avatar>
+									<AvatarImage
+										src={
+											userProfile.avatarUrl ||
+											"/placeholder.svg"
+										}
+										alt={userProfile.userName}
+									/>
+									<AvatarFallback>
+										{userProfile.userName[0]}
+									</AvatarFallback>
+								</Avatar>
 							</div>
 							<h1 className="text-2xl font-bold mb-2">
-								{params.userName}
+								{userProfile.userName}
 							</h1>
 							<p className="text-gray-600 mb-4 max-w-md">
-								{currentUser.description}
+								{userProfile.description ||
+									"No description available."}
 							</p>
-							<Button
-								variant="outline"
-								onClick={() => toggleFollow(params.userName)}
-							>
-								{following.includes(params.userName)
-									? "Following"
-									: "Follow"}
-							</Button>
+							{!isOwnProfile && (
+								<Button
+									variant={
+										isFollowingUser ? "outline" : "default"
+									}
+									onClick={handleToggleFollow}
+								>
+									{isFollowingUser ? "Following" : "Follow"}
+								</Button>
+							)}
 							<div className="flex justify-center space-x-6 mt-4">
 								<span>
-									<strong>{currentUser.posts.length}</strong>{" "}
+									<strong>{userProfile.postCount}</strong>{" "}
 									posts
 								</span>
 								<span>
-									<strong>{currentUser.followers}</strong>{" "}
+									<strong>
+										{userProfile.followersCount}
+									</strong>{" "}
 									followers
+								</span>
+								<span>
+									<strong>
+										{userProfile.followingCount}
+									</strong>{" "}
+									following
 								</span>
 							</div>
 						</div>
 
 						<div className="space-y-4">
-							{currentUser.posts.map((post) => (
+							{userProfile.posts.map((post: any) => (
 								<PhotoCard
 									key={post.id}
 									post={post}
@@ -127,29 +216,21 @@ export default function UserProfile({
 										post.id
 									)}
 									isLiked={likedPosts.includes(post.id)}
-									isFollowing={following.includes(
-										params.userName
-									)}
+									isFollowing={isFollowingUser}
 									onUnlock={() =>
-										unlockImage(post.id, post.price)
+										handleUnlockImage(post.id, post.price)
 									}
-									onOpenPost={() =>
-										console.log("Post Opened", post.id)
-									}
-									onToggleLike={() => toggleLike(post.id)}
-									onToggleFollow={() =>
-										toggleFollow(params.userName)
-									}
+									onOpenPost={() => {}}
+									onToggleLike={() => handleLikePost(post.id)}
+									onToggleFollow={handleToggleFollow}
 								/>
 							))}
 						</div>
 					</main>
-
-					<FloatingMenu />
 				</div>
-				<FollowingMenu following={following} />
+				{/* Toaster component if you have one */}
+				<Toaster />
 			</div>
-			<Toaster />
 		</>
 	);
 }

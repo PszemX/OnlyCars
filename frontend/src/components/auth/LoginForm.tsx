@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Cookies from "js-cookie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +28,7 @@ export default function LoginForm() {
 
 		try {
 			const response = await fetch(
-				"https://localhost:5001/api/user/login",
+				"https://localhost:5001/api/users/login",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
@@ -36,7 +37,10 @@ export default function LoginForm() {
 			);
 
 			if (response.ok) {
-				router.push("/"); // Redirect to dashboard after successful login
+				const data = await response.json();
+				// Store the token securely
+				Cookies.set("token", data.token, { expires: 1 });
+				router.push("/"); // Redirect to main page after successful login
 			} else {
 				const data = await response.json();
 				throw new Error(data.message || "Login failed.");

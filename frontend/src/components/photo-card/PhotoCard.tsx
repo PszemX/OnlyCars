@@ -11,14 +11,14 @@ import {
 import { Heart, MessageCircle, Send } from "lucide-react";
 import Link from "next/link";
 import { PostModal } from "@/components/posts/PostModal";
+import { apiFetch } from "@/lib/utils";
 
 interface Post {
-	id: number;
-	user: {
-		name: string;
-		avatar: string;
-	};
-	image: string;
+	id: string;
+	userId: string;
+	userName: string;
+	userAvatarUrl: string;
+	imageUrl: string;
 	description: string;
 	likes: number;
 	comments: { user: string; text: string }[];
@@ -53,29 +53,52 @@ export const PhotoCard = ({
 		onOpenPost(post);
 	};
 
+	const handleToggleFollow = async () => {
+		try {
+			if (isFollowing) {
+				await apiFetch(
+					`https://localhost:5001/api/users/${post.userId}/unfollow`,
+					{
+						method: "POST",
+					}
+				);
+			} else {
+				await apiFetch(
+					`https://localhost:5001/api/users/${post.userId}/follow`,
+					{
+						method: "POST",
+					}
+				);
+			}
+			onToggleFollow();
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	return (
 		<>
 			<Card>
 				<CardHeader className="flex flex-row items-center space-x-4 p-4">
-					<Link href={`/${post.user.name}`}>
+					<Link href={`/${post.userName}`}>
 						<Avatar>
 							<AvatarImage
-								src={post.user.avatar}
-								alt={post.user.name}
+								src={post.userAvatarUrl || "/placeholder.svg"}
+								alt={post.userName}
 							/>
-							<AvatarFallback>{post.user.name[0]}</AvatarFallback>
+							<AvatarFallback>{post.userName[0]}</AvatarFallback>
 						</Avatar>
 					</Link>
 					<div className="flex-1 flex justify-between items-center">
-						<Link href={`/${post.user.name}`}>
+						<Link href={`/${post.userName}`}>
 							<h2 className="text-sm font-semibold">
-								{post.user.name}
+								{post.userName}
 							</h2>
 						</Link>
 						<Button
 							variant={isFollowing ? "outline" : "default"}
 							size="sm"
-							onClick={onToggleFollow}
+							onClick={handleToggleFollow}
 						>
 							{isFollowing ? "Following" : "Follow"}
 						</Button>
@@ -84,7 +107,7 @@ export const PhotoCard = ({
 				<CardContent className="p-0">
 					<div className="relative">
 						<img
-							src={post.image}
+							src={post.imageUrl}
 							alt="Car"
 							className={`w-full aspect-square object-cover ${
 								!isUnlocked ? "filter blur-md" : ""
@@ -128,7 +151,7 @@ export const PhotoCard = ({
 						{post.likes + (isLiked ? 1 : 0)} likes
 					</p>
 					<p className="text-sm mt-1">
-						<span className="font-semibold">{post.user.name}</span>{" "}
+						<span className="font-semibold">{post.userName}</span>{" "}
 						{post.description}
 					</p>
 					<button

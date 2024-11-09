@@ -11,14 +11,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, MessageCircle, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/utils";
 
 interface Post {
-	id: number;
-	user: {
-		name: string;
-		avatar: string;
-	};
-	image: string;
+	id: string;
+	userId: string;
+	userName: string;
+	userAvatarUrl: string;
+	imageUrl: string;
 	description: string;
 	likes: number;
 	comments: { user: string; text: string }[];
@@ -49,13 +49,47 @@ export const PostModal = ({
 	const [newComment, setNewComment] = useState("");
 	const [comments, setComments] = useState(post.comments);
 
-	const addComment = () => {
+	const addComment = async () => {
 		if (newComment.trim()) {
-			setComments([
-				...comments,
-				{ user: "You", text: newComment.trim() },
-			]);
-			setNewComment("");
+			try {
+				await apiFetch(
+					`https://localhost:5001/api/posts/${post.id}/comment`,
+					{
+						method: "POST",
+						body: JSON.stringify({ text: newComment.trim() }),
+					}
+				);
+				setComments([
+					...comments,
+					{ user: "You", text: newComment.trim() },
+				]);
+				setNewComment("");
+			} catch (error) {
+				console.error(error);
+			}
+		}
+	};
+
+	const handleToggleFollow = async () => {
+		try {
+			if (isFollowing) {
+				await apiFetch(
+					`https://localhost:5001/api/users/${post.userId}/unfollow`,
+					{
+						method: "POST",
+					}
+				);
+			} else {
+				await apiFetch(
+					`https://localhost:5001/api/users/${post.userId}/follow`,
+					{
+						method: "POST",
+					}
+				);
+			}
+			onToggleFollow();
+		} catch (error) {
+			console.error(error);
 		}
 	};
 
@@ -65,7 +99,7 @@ export const PostModal = ({
 				<div className="flex h-[80vh]">
 					<div className="w-2/3 bg-black flex items-center justify-center relative">
 						<img
-							src={post.image}
+							src={post.imageUrl}
 							alt="Car"
 							className={`max-h-full max-w-full object-contain ${
 								!isUnlocked ? "filter blur-md" : ""
@@ -85,15 +119,18 @@ export const PostModal = ({
 								<div className="flex items-center space-x-4">
 									<Avatar>
 										<AvatarImage
-											src={post.user.avatar}
-											alt={post.user.name}
+											src={
+												post.userAvatarUrl ||
+												"/placeholder.svg"
+											}
+											alt={post.userName}
 										/>
 										<AvatarFallback>
-											{post.user.name[0]}
+											{post.userName[0]}
 										</AvatarFallback>
 									</Avatar>
 									<DialogTitle className="text-sm font-semibold">
-										{post.user.name}
+										{post.userName}
 									</DialogTitle>
 								</div>
 								<Button
@@ -101,7 +138,7 @@ export const PostModal = ({
 										isFollowing ? "outline" : "default"
 									}
 									size="sm"
-									onClick={onToggleFollow}
+									onClick={handleToggleFollow}
 								>
 									{isFollowing ? "Following" : "Follow"}
 								</Button>
@@ -110,7 +147,7 @@ export const PostModal = ({
 						<ScrollArea className="flex-1 p-4">
 							<p className="text-sm mb-4">
 								<span className="font-semibold">
-									{post.user.name}
+									{post.userName}
 								</span>{" "}
 								{post.description}
 							</p>
