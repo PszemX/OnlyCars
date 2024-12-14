@@ -125,5 +125,90 @@ namespace backend.Controllers
             return Ok(posts);
         }
 
+        [Authorize]
+        [HttpPost("follow/{userToFollowId}")]
+        public async Task<IActionResult> FollowUser(string userToFollowId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            var currentUser = await _userRepository.GetUserByIdAsync(currentUserId);
+            var userToFollow = await _userRepository.GetUserByIdAsync(userToFollowId);
+
+            if (currentUser == null || userToFollow == null)
+                return NotFound("User not found.");
+                
+            if (currentUserId == userToFollowId)
+                return BadRequest("Cannot follow yourself.");
+                
+            if (currentUser.FollowingIds.Contains(userToFollowId))
+                return BadRequest("Already following this user.");
+
+            currentUser.FollowingIds.Add(userToFollowId);
+            await _userRepository.UpdateUserAsync(currentUser);
+
+            userToFollow.FollowerIds.Add(currentUserId);
+            await _userRepository.UpdateUserAsync(userToFollow);
+
+            return Ok("Successfully followed user.");
+        }
+
+        [Authorize]
+        [HttpPost("unfollow/{userToUnfollowId}")]
+        public async Task<IActionResult> UnfollowUser(string userToUnfollowId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            var currentUser = await _userRepository.GetUserByIdAsync(currentUserId);
+            var userToUnfollow = await _userRepository.GetUserByIdAsync(userToUnfollowId);
+
+            if (currentUser == null || userToUnfollow == null)
+                return NotFound("User not found.");
+                
+            if (!currentUser.FollowingIds.Contains(userToUnfollowId))
+                return BadRequest("Not following this user.");
+
+            currentUser.FollowingIds.Remove(userToUnfollowId);
+            await _userRepository.UpdateUserAsync(currentUser);
+
+            userToUnfollow.FollowerIds.Remove(currentUserId);
+            await _userRepository.UpdateUserAsync(userToUnfollow);
+
+            return Ok("Successfully unfollowed user.");
+        }
+
+        [Authorize]
+        [HttpGet("{userId}/followers")]
+        public async Task<IActionResult> GetFollowers(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+
+            var followers = await _userRepository.GetUsersByIdsAsync(user.FollowerIds);
+            var followerDtos = followers.Select(f => new FollowUserDto 
+            { 
+                Id = f.Id, 
+                UserName = f.UserName 
+            }).ToList();
+
+            return Ok(followerDtos);
+        }
+
+        [Authorize]
+        [HttpGet("{userId}/following")]
+        public async Task<IActionResult> GetFollowing(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+
+            var following = await _userRepository.GetUsersByIdsAsync(user.FollowingIds);
+            var followingDtos = following.Select(f => new FollowUserDto 
+            { 
+                Id = f.Id, 
+                UserName = f.UserName 
+            }).ToList();
+
+            return Ok(followingDtos);
+        }
+
     }
 }

@@ -26,16 +26,18 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] PostCreationDto postDto)
         {
+            if (postDto.ImagesData.Count > 3)
+                return BadRequest("Maximum 3 images allowed.");
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine(userId);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
             var post = new Post
             {
-                ImageUrl = postDto.ImageUrl,
                 Description = postDto.Description,
-                Price = postDto.Price
+                Price = postDto.Price,
+                ImagesData = postDto.ImagesData.Select(base64 => Convert.FromBase64String(base64)).ToList()
             };
 
             await _postsCollection.InsertOneAsync(post);
