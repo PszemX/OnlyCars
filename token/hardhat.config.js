@@ -6,7 +6,7 @@ module.exports = {
   solidity: "0.8.28",
   networks:{
     holesky:{
-      url: "https://ethereum-holesky-rpc.publicnode.com",
+      url: "https://holesky.infura.io/v3/ab0cfe4975ae44dcb3b4c4e81bbd1918",
       accounts: [`0x${PRIVATE_KEY}`]
     }
   }
