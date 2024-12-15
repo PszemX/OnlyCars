@@ -61,7 +61,7 @@ namespace backend.Controllers
                 UserName = registrationDto.UserName,
                 Email = registrationDto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registrationDto.Password),
-                TokenBalance = 100
+                TokenBalance = 0
             };
 
             await _userRepository.CreateUserAsync(newUser);
@@ -210,5 +210,38 @@ namespace backend.Controllers
             return Ok(followingDtos);
         }
 
+        [Authorize]
+        [HttpGet("feed")]
+        public async Task<IActionResult> GetUserFeed()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            
+            if (user == null) 
+                return NotFound("User not found.");
+
+            var posts = await _postsCollection
+                .Find(p => user.FollowingIds.Contains(p.UserId))
+                .SortByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            return Ok(posts);
+        }
+
+        [Authorize]
+        [HttpPost("profile/picture")]
+        public async Task<IActionResult> UpdateProfilePicture([FromBody] string base64Image)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            
+            if (user == null) 
+                return NotFound("User not found.");
+
+            user.ProfilePicture = Convert.FromBase64String(base64Image);
+            await _userRepository.UpdateUserAsync(user);
+            
+            return Ok("Profile picture updated successfully.");
+        }
     }
 }

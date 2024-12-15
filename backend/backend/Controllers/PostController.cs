@@ -35,6 +35,7 @@ namespace backend.Controllers
 
             var post = new Post
             {
+                UserId = userId,
                 Description = postDto.Description,
                 Price = postDto.Price,
                 ImagesData = postDto.ImagesData.Select(base64 => Convert.FromBase64String(base64)).ToList()

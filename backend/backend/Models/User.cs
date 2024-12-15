@@ -14,7 +14,8 @@ namespace backend.Models
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
         public int TokenBalance { get; set; }
-        public string WalletAddress { get; set; } = null!;
+        public string? WalletAddress { get; set; }
+        public byte[]? ProfilePicture { get; set; } 
         public List<string> PostIds { get; set; } = new List<string>();
         public List<string> PurchasedPostIds { get; set; } = new List<string>();
         public List<string> LikedPostIds { get; set; } = new List<string>();
