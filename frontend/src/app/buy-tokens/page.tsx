@@ -24,7 +24,7 @@ export default function BuyTokensPage() {
 	const handlePurchase = async () => {
 		setIsLoading(true);
 		try {
-			await apiFetch("https://localhost:5001/api/users/purchase-tokens", {
+			await apiFetch("http://localhost:5001/api/users/purchase-tokens", {
 				method: "POST",
 				body: JSON.stringify({ amount: tokenAmount }),
 			});

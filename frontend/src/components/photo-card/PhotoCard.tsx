@@ -57,14 +57,14 @@ export const PhotoCard = ({
 		try {
 			if (isFollowing) {
 				await apiFetch(
-					`https://localhost:5001/api/users/${post.userId}/unfollow`,
+					`http://localhost:5001/api/users/${post.userId}/unfollow`,
 					{
 						method: "POST",
 					}
 				);
 			} else {
 				await apiFetch(
-					`https://localhost:5001/api/users/${post.userId}/follow`,
+					`http://localhost:5001/api/users/${post.userId}/follow`,
 					{
 						method: "POST",
 					}

@@ -23,7 +23,7 @@ export const Navbar = ({
 		const fetchCurrentUser = async () => {
 			try {
 				const userData = await apiFetch(
-					"https://localhost:5001/api/users/current"
+					"http://localhost:5001/api/users/current"
 				);
 				setCurrentUser(userData);
 			} catch (error) {
