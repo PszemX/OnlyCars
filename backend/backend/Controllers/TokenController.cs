@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using backend.Models;
+using backend.Dtos;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,31 @@ namespace backend.Controllers
 
             var balance = await _tokenService.GetBalance(user.WalletAddress);
             return Ok(new { balance });
+        }
+
+        [HttpGet("users-wallet-balances")]
+        public async Task<IActionResult> GetUsersWalletInfo()
+        {
+            var users = await _usersCollection.Find(_ => true).ToListAsync();
+            var walletInfos = new List<UserWalletInfoDto>();
+
+            foreach (var user in users)
+            {
+                var walletInfo = new UserWalletInfoDto
+                {
+                    UserName = user.UserName,
+                    WalletAddress = user.WalletAddress
+                };
+
+                if (!string.IsNullOrEmpty(user.WalletAddress))
+                {
+                    walletInfo.WalletBalance = await _tokenService.GetBalance(user.WalletAddress);
+                }
+
+                walletInfos.Add(walletInfo);
+            }
+
+            return Ok(walletInfos);
         }
 
         [HttpGet("user-site-balance")]
