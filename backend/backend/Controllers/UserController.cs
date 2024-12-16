@@ -42,6 +42,30 @@ namespace backend.Controllers
             return Ok(user);
         }
 
+        [Authorize]
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            
+            if (user == null) 
+                return NotFound("User not found.");
+
+            var currentUserDto = new CurrentUserDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                TokenBalance = user.TokenBalance,
+                FollowingUserIds = user.FollowingIds,
+                LikedPostIds = user.LikedPostIds,
+                PurchasedPostIds = user.PurchasedPostIds,
+                ProfilePicture = user.ProfilePicture,
+            };
+
+            return Ok(currentUserDto);
+        }
+
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
@@ -208,24 +232,6 @@ namespace backend.Controllers
             }).ToList();
 
             return Ok(followingDtos);
-        }
-
-        [Authorize]
-        [HttpGet("feed")]
-        public async Task<IActionResult> GetUserFeed()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            
-            if (user == null) 
-                return NotFound("User not found.");
-
-            var posts = await _postsCollection
-                .Find(p => user.FollowingIds.Contains(p.UserId))
-                .SortByDescending(p => p.CreatedAt)
-                .ToListAsync();
-
-            return Ok(posts);
         }
 
         [Authorize]

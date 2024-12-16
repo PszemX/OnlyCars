@@ -4,9 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { isTokenExpired } from "@/lib/utils";
+import { jwtDecode } from "jwt-decode";
+
+interface DecodedToken {
+	nameid: string;  // This will contain the userId
+	// Add other claims you expect from your token
+}
 
 export const useAuth = () => {
 	const router = useRouter();
+	const [userId, setUserId] = useState<string | null>(null);
 	const [authenticated, setAuthenticated] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -15,9 +22,11 @@ export const useAuth = () => {
 			Cookies.remove("token");
 			router.push("/login");
 		} else {
+			const decoded = jwtDecode<DecodedToken>(token);
+			setUserId(decoded.nameid);
 			setAuthenticated(true);
 		}
 	}, [router]);
 
-	return authenticated;
+	return { userId, authenticated };
 };

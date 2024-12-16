@@ -57,14 +57,14 @@ export const PhotoCard = ({
 		try {
 			if (isFollowing) {
 				await apiFetch(
-					`http://localhost:5001/api/users/${post.userId}/unfollow`,
+					`https://localhost:5001/api/users/${post.userId}/unfollow`,
 					{
 						method: "POST",
 					}
 				);
 			} else {
 				await apiFetch(
-					`http://localhost:5001/api/users/${post.userId}/follow`,
+					`https://localhost:5001/api/users/${post.userId}/follow`,
 					{
 						method: "POST",
 					}
@@ -86,7 +86,7 @@ export const PhotoCard = ({
 								src={post.userAvatarUrl || "/placeholder.svg"}
 								alt={post.userName}
 							/>
-							<AvatarFallback>{post.userName[0]}</AvatarFallback>
+							<AvatarFallback>{post.userName ? post.userName[0] : '?'}</AvatarFallback>
 						</Avatar>
 					</Link>
 					<div className="flex-1 flex justify-between items-center">
@@ -158,7 +158,7 @@ export const PhotoCard = ({
 						className="text-sm text-gray-500 mt-1 hover:underline"
 						onClick={handleOpenPost}
 					>
-						View all {post.comments.length} comments
+						View all {post.comments?.length || 0} comments
 					</button>
 				</CardFooter>
 			</Card>

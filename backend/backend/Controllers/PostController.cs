@@ -4,6 +4,7 @@ using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using backend.Repositories;
 
 namespace backend.Controllers
 {
@@ -15,12 +16,14 @@ namespace backend.Controllers
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Post> _postsCollection;
         private readonly IMongoCollection<Comment> _commentsCollection;
+        private readonly UserRepository _userRepository;
 
-        public PostController(IMongoDatabase database)
+        public PostController(IMongoDatabase database, UserRepository userRepository)
         {
             _usersCollection = database.GetCollection<User>("Users");
             _postsCollection = database.GetCollection<Post>("Posts");
             _commentsCollection = database.GetCollection<Comment>("Comments");
+            _userRepository = userRepository;
         }
 
         [HttpPost]
@@ -58,6 +61,7 @@ namespace backend.Controllers
         }
 
         [HttpGet]
+        [Route("all")]
         public async Task<IActionResult> GetAllPosts()
         {
             var posts = await _postsCollection.Find(_ => true).ToListAsync();
@@ -140,6 +144,23 @@ namespace backend.Controllers
             var comments = await _commentsCollection.Find(c => post.CommentIds.Contains(c.Id)).ToListAsync();
 
             return Ok(comments);
+        }
+
+        [HttpGet("feed")]
+        public async Task<IActionResult> GetUserFeed()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            
+            if (user == null) 
+                return NotFound("User not found.");
+
+            var posts = await _postsCollection
+                .Find(p => user.FollowingIds.Contains(p.UserId))
+                .SortByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            return Ok(posts);
         }
     }
 }

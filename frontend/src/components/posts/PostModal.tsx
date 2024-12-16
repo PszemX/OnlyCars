@@ -53,7 +53,7 @@ export const PostModal = ({
 		if (newComment.trim()) {
 			try {
 				await apiFetch(
-					`http://localhost:5001/api/posts/${post.id}/comment`,
+					`https://localhost:5001/api/posts/${post.id}/comment`,
 					{
 						method: "POST",
 						body: JSON.stringify({ text: newComment.trim() }),
@@ -74,14 +74,14 @@ export const PostModal = ({
 		try {
 			if (isFollowing) {
 				await apiFetch(
-					`http://localhost:5001/api/users/${post.userId}/unfollow`,
+					`https://localhost:5001/api/users/${post.userId}/unfollow`,
 					{
 						method: "POST",
 					}
 				);
 			} else {
 				await apiFetch(
-					`http://localhost:5001/api/users/${post.userId}/follow`,
+					`https://localhost:5001/api/users/${post.userId}/follow`,
 					{
 						method: "POST",
 					}

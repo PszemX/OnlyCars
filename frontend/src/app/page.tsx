@@ -26,7 +26,7 @@ export default function OnlyCars() {
 	useEffect(() => {
 		if (authenticated) {
 			// Fetch current user data
-			apiFetch("http://localhost:5001/api/users/current")
+			apiFetch("https://localhost:5001/api/users/current")
 				.then((userData) => {
 					setTokenBalance(userData.tokenBalance);
 					setFollowing(userData.followingUserIds || []);
@@ -43,8 +43,8 @@ export default function OnlyCars() {
 		if (authenticated) {
 			// Fetch posts
 			const endpoint = showAllPosts
-				? "http://localhost:5001/api/posts/all"
-				: "http://localhost:5001/api/posts";
+				? "https://localhost:5001/api/posts/all"
+				: "https://localhost:5001/api/posts/feed";
 
 			apiFetch(endpoint)
 				.then((data) => {
@@ -64,7 +64,7 @@ export default function OnlyCars() {
 		try {
 			if (following.includes(userId)) {
 				await apiFetch(
-					`http://localhost:5001/api/users/${userId}/unfollow`,
+					`https://localhost:5001/api/users/${userId}/unfollow`,
 					{
 						method: "POST",
 					}
@@ -72,7 +72,7 @@ export default function OnlyCars() {
 				setFollowing((prev) => prev.filter((id) => id !== userId));
 			} else {
 				await apiFetch(
-					`http://localhost:5001/api/users/${userId}/follow`,
+					`https://localhost:5001/api/users/${userId}/follow`,
 					{
 						method: "POST",
 					}
@@ -91,7 +91,7 @@ export default function OnlyCars() {
 	const handleUnlockImage = async (postId: string, price: number) => {
 		try {
 			const response = await apiFetch(
-				`http://localhost:5001/api/posts/${postId}/purchase`,
+				`https://localhost:5001/api/posts/${postId}/purchase`,
 				{
 					method: "POST",
 				}
@@ -120,7 +120,7 @@ export default function OnlyCars() {
 
 	const handleLikePost = async (postId: string) => {
 		try {
-			await apiFetch(`http://localhost:5001/api/posts/${postId}/like`, {
+			await apiFetch(`https://localhost:5001/api/posts/${postId}/like`, {
 				method: "POST",
 			});
 			setLikedPosts((prev) =>

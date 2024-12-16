@@ -30,7 +30,7 @@ export default function UserProfile({
 	useEffect(() => {
 		if (authenticated) {
 			// Fetch current user data
-			apiFetch("http://localhost:5001/api/users/current")
+			apiFetch("https://localhost:5001/api/users/current")
 				.then((userData) => {
 					setTokenBalance(userData.tokenBalance);
 					setFollowing(userData.followingUserIds || []);
@@ -48,7 +48,7 @@ export default function UserProfile({
 		if (authenticated) {
 			// Fetch the profile data of the user
 			apiFetch(
-				`http://localhost:5001/api/users/profile/${params.userName}`
+				`https://localhost:5001/api/users/profile/${params.userName}`
 			)
 				.then((data) => {
 					setUserProfile(data);
@@ -74,7 +74,7 @@ export default function UserProfile({
 		try {
 			if (isFollowingUser) {
 				await apiFetch(
-					`http://localhost:5001/api/users/${userProfile.id}/unfollow`,
+					`https://localhost:5001/api/users/${userProfile.id}/unfollow`,
 					{
 						method: "POST",
 					}
@@ -84,7 +84,7 @@ export default function UserProfile({
 				);
 			} else {
 				await apiFetch(
-					`http://localhost:5001/api/users/${userProfile.id}/follow`,
+					`https://localhost:5001/api/users/${userProfile.id}/follow`,
 					{
 						method: "POST",
 					}
@@ -99,7 +99,7 @@ export default function UserProfile({
 	const handleUnlockImage = async (postId: string, price: number) => {
 		try {
 			const response = await apiFetch(
-				`http://localhost:5001/api/posts/${postId}/purchase`,
+				`https://localhost:5001/api/posts/${postId}/purchase`,
 				{
 					method: "POST",
 				}
@@ -128,7 +128,7 @@ export default function UserProfile({
 
 	const handleLikePost = async (postId: string) => {
 		try {
-			await apiFetch(`http://localhost:5001/api/posts/${postId}/like`, {
+			await apiFetch(`https://localhost:5001/api/posts/${postId}/like`, {
 				method: "POST",
 			});
 			setLikedPosts((prev) =>
