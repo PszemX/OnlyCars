@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +14,6 @@ import {
 	CardTitle,
 	CardFooter,
 } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
 	const [userName, setUserName] = useState("");
@@ -39,14 +40,14 @@ export default function RegisterForm() {
 
 		try {
 			const response = await fetch(
-				"https://localhost:5001/api/user/register",
+				"http://localhost:5001/api/users/register",
 				{
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						userName: userName,
 						email: email,
-						passwordHash: password,
+						password: password,
 					}),
 				}
 			);
@@ -61,7 +62,7 @@ export default function RegisterForm() {
 				router.push("/login");
 			}, 2000);
 		} catch (err: any) {
-			setError(`${err.message}`);
+			setError(err.message || "An error occurred during registration");
 		}
 	};
 
@@ -118,9 +119,7 @@ export default function RegisterForm() {
 							type="text"
 							placeholder="Your name"
 							value={userName}
-							onChange={(e) => {
-								setUserName(e.target.value);
-							}}
+							onChange={(e) => setUserName(e.target.value)}
 							required
 						/>
 					</div>
@@ -129,7 +128,7 @@ export default function RegisterForm() {
 						<Input
 							id="email"
 							type="email"
-							placeholder="your@email.com"
+							placeholder="your@example.com"
 							value={email}
 							onChange={(e) => {
 								setEmail(e.target.value);
@@ -170,7 +169,9 @@ export default function RegisterForm() {
 						)}
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="confirmPassword">Repeat password</Label>
+						<Label htmlFor="confirmPassword">
+							Confirm Password
+						</Label>
 						<Input
 							id="confirmPassword"
 							type="password"
@@ -180,7 +181,7 @@ export default function RegisterForm() {
 						/>
 						{!passwordsMatch && confirmPassword && (
 							<p className="text-sm text-red-500">
-								Passwords are not the same
+								Passwords do not match
 							</p>
 						)}
 					</div>
