@@ -20,6 +20,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development 
       - MongoDbSettings__ConnectionString=mongodb://mongodb:27017
+    env_file:
+      - ./backend/backend/.env
     depends_on:
       - mongodb
 
