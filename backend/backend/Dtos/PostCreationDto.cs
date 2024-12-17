@@ -3,7 +3,7 @@ namespace backend.Dtos
     public class PostCreationDto
     {
         public string Description { get; set; } = string.Empty;
-        public List<string> ImagesData { get; set; } = new List<string>();
+        public IFormFile[] Images { get; set; } = Array.Empty<IFormFile>();
         public int Price { get; set; }
     }
 }

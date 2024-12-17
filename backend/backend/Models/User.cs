@@ -16,7 +16,7 @@ namespace backend.Models
         public string Description { get; set; } = string.Empty;
         public int TokenBalance { get; set; } = 0;
         public string? WalletAddress { get; set; }
-        public byte[]? ProfilePicture { get; set; } 
+        public string? ProfilePictureUrl { get; set; } 
         public List<string> PostIds { get; set; } = new List<string>();
         public List<string> PurchasedPostIds { get; set; } = new List<string>();
         public List<string> LikedPostIds { get; set; } = new List<string>();

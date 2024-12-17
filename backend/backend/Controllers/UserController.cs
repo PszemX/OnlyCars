@@ -2,6 +2,7 @@
 using System.Text;
 using backend.Dtos;
 using backend.Models;
+using backend.Helpers;
 using backend.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +20,16 @@ namespace backend.Controllers
         private readonly IMongoCollection<Post> _postsCollection;
         private readonly IMongoCollection<Comment> _commentsCollection;
         private IConfiguration _config;
+        private readonly CloudflareStorageService _storage;
 
-        public UserController(UserRepository userRepository, IMongoDatabase database, IConfiguration config)
+        public UserController(UserRepository userRepository, IMongoDatabase database, IConfiguration config, CloudflareStorageService storage)
         {
             _userRepository = userRepository;
             _usersCollection = database.GetCollection<User>("Users");
             _postsCollection = database.GetCollection<Post>("Posts");
             _commentsCollection = database.GetCollection<Comment>("Comments");
             _config = config;
+            _storage = storage;            
         }
 
         [Authorize]
@@ -65,7 +68,7 @@ namespace backend.Controllers
                 FollowingUserIds = user.FollowingIds,
                 LikedPostIds = user.LikedPostIds,
                 PurchasedPostIds = user.PurchasedPostIds,
-                ProfilePicture = user.ProfilePicture,
+                ProfilePictureUrl = user.ProfilePictureUrl
             };
 
             return Ok(currentUserDto);
@@ -83,7 +86,7 @@ namespace backend.Controllers
                 Id = user.Id,
                 UserName = user.UserName,
                 Description = user.Description,
-                ProfilePicture = user.ProfilePicture,
+                ProfilePictureUrl = user.ProfilePictureUrl,
                 FollowingIds = user.FollowingIds,
                 FollowerIds = user.FollowerIds,
                 PostIds = user.PostIds,
@@ -296,17 +299,21 @@ namespace backend.Controllers
                 updateDefinition.Add(update.Set(u => u.WalletAddress, updateDto.WalletAddress));
             }
 
-            if (!string.IsNullOrEmpty(updateDto.ProfilePicture))
+             if (updateDto.ProfilePicture != null)
             {
-                try
+                if (!ImageHelper.IsValidImage(updateDto.ProfilePicture))
+                    return BadRequest(new { message = "Invalid image format" });
+
+                if (!ImageHelper.IsValidImageSize(updateDto.ProfilePicture))
+                    return BadRequest(new { message = "Profile picture is too large" });
+
+                if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
                 {
-                    var imageData = Convert.FromBase64String(updateDto.ProfilePicture);
-                    updateDefinition.Add(update.Set(u => u.ProfilePicture, imageData));
+                    await _storage.DeleteImageAsync(user.ProfilePictureUrl);
                 }
-                catch (FormatException)
-                {
-                    return BadRequest( new { message = "Invalid profile picture format. Please provide a valid base64 string." });
-                }
+
+                var imageUrl = await _storage.UploadImageAsync(updateDto.ProfilePicture);
+                updateDefinition.Add(update.Set(u => u.ProfilePictureUrl, imageUrl));
             }
 
             if (updateDefinition.Count > 0)

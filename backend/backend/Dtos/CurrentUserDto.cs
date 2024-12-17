@@ -9,6 +9,6 @@ namespace backend.Dtos
         public List<string> FollowingUserIds { get; set; } = new();
         public List<string> LikedPostIds { get; set; } = new();
         public List<string> PurchasedPostIds { get; set; } = new();
-        public byte[]? ProfilePicture { get; set; }
+        public string? ProfilePictureUrl { get; set; }
     }
 }

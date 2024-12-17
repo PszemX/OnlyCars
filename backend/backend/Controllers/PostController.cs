@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using backend.Dtos;
+using backend.Helpers;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,34 +18,53 @@ namespace backend.Controllers
         private readonly IMongoCollection<Post> _postsCollection;
         private readonly IMongoCollection<Comment> _commentsCollection;
         private readonly UserRepository _userRepository;
+        private readonly CloudflareStorageService _storage;
 
-        public PostController(IMongoDatabase database, UserRepository userRepository)
+        public PostController(IMongoDatabase database, UserRepository userRepository, CloudflareStorageService storage)
         {
             _usersCollection = database.GetCollection<User>("Users");
             _postsCollection = database.GetCollection<Post>("Posts");
             _commentsCollection = database.GetCollection<Comment>("Comments");
             _userRepository = userRepository;
+            _storage = storage;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePost([FromBody] PostCreationDto postDto)
+        public async Task<IActionResult> CreatePost([FromForm] PostCreationDto postDto)
         {
-            if (postDto.ImagesData.Count > 3) return BadRequest(new { message = "Maximum 3 images allowed." });
+            if (postDto.Images == null || postDto.Images.Length == 0)
+                return BadRequest(new { message = "At least one image is required." });
+
+            if (postDto.Images.Length > 3)
+                return BadRequest(new { message = "Maximum 3 images allowed." });
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound(new { message = "User not found." });
+
+            var uploadedImageUrls = new List<string>();
+
+            foreach (var image in postDto.Images)
+            {
+                if (!ImageHelper.IsValidImage(image))
+                    return BadRequest(new { message = $"Invalid image format: {image.FileName}" });
+
+                if (!ImageHelper.IsValidImageSize(image))
+                    return BadRequest(new { message = $"Image too large: {image.FileName}" });
+
+                var imageUrl = await _storage.UploadImageAsync(image);
+                uploadedImageUrls.Add(imageUrl);
+            }
 
             var post = new Post
             {
                 UserId = userId,
                 Description = postDto.Description,
                 Price = postDto.Price,
-                ImagesData = postDto.ImagesData.Select(base64 => Convert.FromBase64String(base64)).ToList()
+                ImageUrls = uploadedImageUrls
             };
-
+            
             await _postsCollection.InsertOneAsync(post);
-
             user.PostIds.Add(post.Id);
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
 
@@ -168,6 +188,11 @@ namespace backend.Controllers
             if (post == null) return NotFound(new { message = "Post not found." });
             
             if (!user.PostIds.Contains(postId)) return Unauthorized(new { message = "You can only delete your own posts." });
+
+            foreach (var imageUrl in post.ImageUrls)
+            {
+                await _storage.DeleteImageAsync(imageUrl);
+            }
 
             user.PostIds.Remove(postId);
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);

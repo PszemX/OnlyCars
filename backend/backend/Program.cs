@@ -1,6 +1,7 @@
 using MongoDB.Driver;
 using backend.Models;
 using backend.Repositories;
+using backend.Dtos;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +29,8 @@ builder.Services.AddSingleton<IMongoClient>(s =>
     var settings = s.GetRequiredService<IOptions<MongoDbSettings>>().Value;
     return new MongoClient(settings.ConnectionString);
 });
+
+builder.Services.AddSingleton<CloudflareStorageService>();
 
 builder.Services.AddScoped<IMongoDatabase>(s =>
 {
