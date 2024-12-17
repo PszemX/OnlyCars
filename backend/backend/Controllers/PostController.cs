@@ -87,9 +87,7 @@ namespace backend.Controllers
             };
 
             await _commentsCollection.InsertOneAsync(comment);
-
             post.CommentIds.Add(comment.Id);
-
             await _postsCollection.ReplaceOneAsync(p => p.Id == post.Id, post);
 
             return Ok(new { message = "Comment added." });

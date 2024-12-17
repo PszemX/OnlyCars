@@ -8,7 +8,7 @@ namespace backend.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
-        public string UserId { get; set; } = null!;
+        public string UserId { get; set; } = string.Empty;
         public List<byte[]> ImagesData { get; set; } = new List<byte[]>();
         public string? Description { get; set; }
         public int Price { get; set; } = 0;

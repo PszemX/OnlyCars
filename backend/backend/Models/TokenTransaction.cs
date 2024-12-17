@@ -7,8 +7,8 @@ namespace backend.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = null!;
-        public string UserId { get; set; } = null!;
+        public string Id { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
         public int Amount { get; set; }
         public DateTime Date { get; set; }
     }

@@ -2,7 +2,7 @@ namespace backend.Dtos
 {
     public class PostCreationDto
     {
-        public string Description { get; set; } = null!;
+        public string Description { get; set; } = string.Empty;
         public List<string> ImagesData { get; set; } = new List<string>();
         public int Price { get; set; }
     }

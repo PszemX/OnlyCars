@@ -10,10 +10,10 @@ namespace backend.Models
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
         public List<string> FollowingIds { get; set; } = new List<string>();
         public List<string> FollowerIds { get; set; } = new List<string>();
-        public string UserName { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string PasswordHash { get; set; } = null!;
-        public int TokenBalance { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public int TokenBalance { get; set; } = 0;
         public string? WalletAddress { get; set; }
         public byte[]? ProfilePicture { get; set; } 
         public List<string> PostIds { get; set; } = new List<string>();
