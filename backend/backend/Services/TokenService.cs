@@ -9,10 +9,11 @@ namespace backend.Services
         private readonly string _contractAddress;
         private readonly string _network;
 
-        public TokenService(IConfiguration configuration)
+        public TokenService()
         {
-            _contractAddress = configuration["Blockchain:ContractAddress"]!;
-            _network = configuration["Blockchain:Network"]!;
+            DotNetEnv.Env.Load();       
+            _contractAddress = Environment.GetEnvironmentVariable("CONTRACT_ADDRESS")!;
+            _network = Environment.GetEnvironmentVariable("NETWORK")!;
         }
 
         public async Task<decimal> GetBalance(string address)

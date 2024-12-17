@@ -16,18 +16,17 @@ namespace backend.Controllers
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<TokenTransaction> _transactionsCollection; 
         private readonly TokenService _tokenService;
-        private readonly IConfiguration _configuration;
         private readonly string _orgAddress;
         private readonly string _orgPrivateKey;
 
-        public TokenController(IMongoDatabase database, TokenService tokenService, IConfiguration configuration)
+        public TokenController(IMongoDatabase database, TokenService tokenService)
         {
+            DotNetEnv.Env.Load();
             _usersCollection = database.GetCollection<User>("Users");
             _transactionsCollection = database.GetCollection<TokenTransaction>("TokenTransactions");
             _tokenService = tokenService;
-            _configuration = configuration;
-            _orgAddress = _configuration["Blockchain:OrganizationAddress"]!;
-            _orgPrivateKey = _configuration["Blockchain:OrganizationPrivateKey"]!;
+            _orgAddress = Environment.GetEnvironmentVariable("ORGANIZATION_ADDRESS")!;
+            _orgPrivateKey = Environment.GetEnvironmentVariable("ORGANIZATION_PRIVATE_KEY")!;
         }
 
         [HttpGet("user-wallet-balance")]
