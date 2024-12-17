@@ -14,16 +14,20 @@ namespace backend.Controllers
     public class TokenController : ControllerBase
     {
         private readonly IMongoCollection<User> _usersCollection;
+        private readonly IMongoCollection<TokenTransaction> _transactionsCollection; 
         private readonly TokenService _tokenService;
         private readonly IConfiguration _configuration;
         private readonly string _orgAddress;
+        private readonly string _orgPrivateKey;
 
         public TokenController(IMongoDatabase database, TokenService tokenService, IConfiguration configuration)
         {
             _usersCollection = database.GetCollection<User>("Users");
+            _transactionsCollection = database.GetCollection<TokenTransaction>("TokenTransactions");
             _tokenService = tokenService;
             _configuration = configuration;
             _orgAddress = _configuration["Blockchain:OrganizationAddress"]!;
+            _orgPrivateKey = _configuration["Blockchain:OrganizationPrivateKey"]!;
         }
 
         [HttpGet("user-wallet-balance")]
@@ -99,6 +103,15 @@ namespace backend.Controllers
 
                 var update = Builders<User>.Update.Inc(u => u.TokenBalance, depositDto.Amount);
                 await _usersCollection.UpdateOneAsync(u => u.Id == user.Id, update);
+                
+                var transaction = new TokenTransaction
+                {
+                    UserId = user.Id,
+                    Amount = depositDto.Amount,
+                    TransactionHash = txHash,
+                    Type = "deposit"
+                };
+                await _transactionsCollection.InsertOneAsync(transaction);
 
                 return Ok(new { 
                     message = "Tokens deposited successfully",
@@ -124,16 +137,23 @@ namespace backend.Controllers
 
             try
             {
-                var orgPrivateKey = _configuration["Blockchain:OrganizationPrivateKey"]!;
-
                 var txHash = await _tokenService.Transfer(
-                    orgPrivateKey,
+                    _orgPrivateKey,
                     user.WalletAddress,
                     amount
                 );
 
                 var update = Builders<User>.Update.Inc(u => u.TokenBalance, -(int)amount);
                 await _usersCollection.UpdateOneAsync(u => u.Id == user.Id, update);
+
+                var transaction = new TokenTransaction
+                {
+                    UserId = user.Id,
+                    Amount = (int)amount,
+                    TransactionHash = txHash,
+                    Type = "withdraw"
+                };
+                await _transactionsCollection.InsertOneAsync(transaction);
 
                 return Ok(new { 
                     message = "Tokens withdrawn successfully",
@@ -156,6 +176,20 @@ namespace backend.Controllers
             await _usersCollection.UpdateOneAsync(u => u.Id == user.Id, update);
 
             return Ok(new { message = "Wallet address updated successfully" });
+        }
+
+        [HttpGet("transactions")]
+        public async Task<IActionResult> GetUserTransactions()
+        {
+            var user = await GetCurrentUser();
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            var transactions = await _transactionsCollection
+                .Find(t => t.UserId == user.Id)
+                .SortByDescending(t => t.Date)
+                .ToListAsync();
+
+            return Ok(transactions);
         }
 
         private async Task<User> GetCurrentUser()
