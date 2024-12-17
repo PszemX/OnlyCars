@@ -60,6 +60,7 @@ namespace backend.Controllers
             {
                 Id = user.Id,
                 UserName = user.UserName,
+                Description = user.Description,
                 TokenBalance = user.TokenBalance,
                 FollowingUserIds = user.FollowingIds,
                 LikedPostIds = user.LikedPostIds,
@@ -81,6 +82,7 @@ namespace backend.Controllers
             {
                 Id = user.Id,
                 UserName = user.UserName,
+                Description = user.Description,
                 ProfilePicture = user.ProfilePicture,
                 FollowingIds = user.FollowingIds,
                 FollowerIds = user.FollowerIds,
@@ -256,19 +258,66 @@ namespace backend.Controllers
         }
 
         [Authorize]
-        [HttpPost("profile/picture")]
-        public async Task<IActionResult> UpdateProfilePicture([FromBody] string base64Image)
+        [HttpPatch("update")]
+        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var user = await _userRepository.GetUserByIdAsync(userId);
+            
             if (user == null) return NotFound(new { message = "User not found." });
 
-            user.ProfilePicture = Convert.FromBase64String(base64Image);
-            await _userRepository.UpdateUserAsync(user);
-            
-            return Ok(new { message = "Profile picture updated successfully." });
+            if (!BCrypt.Net.BCrypt.Verify(updateDto.Password, user.PasswordHash))
+                return BadRequest(new { message = "Incorrect password." });
+
+            var update = Builders<User>.Update;
+            var updateDefinition = new List<UpdateDefinition<User>>();
+
+            if (!string.IsNullOrEmpty(updateDto.UserName) && updateDto.UserName != user.UserName)
+            {
+                var existingUser = await _userRepository.GetUserByUsernameAsync(updateDto.UserName);
+                if (existingUser != null) return BadRequest(new { message = "Username already exists." });
+
+                updateDefinition.Add(update.Set(u => u.UserName, updateDto.UserName));
+            }
+
+            if (!string.IsNullOrEmpty(updateDto.NewPassword))
+            {
+                var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(updateDto.NewPassword);
+                updateDefinition.Add(update.Set(u => u.PasswordHash, newPasswordHash));
+            }
+
+            if (updateDto.Description != null)
+            {
+                updateDefinition.Add(update.Set(u => u.Description, updateDto.Description));
+            }
+
+            if (!string.IsNullOrEmpty(updateDto.WalletAddress))
+            {
+                updateDefinition.Add(update.Set(u => u.WalletAddress, updateDto.WalletAddress));
+            }
+
+            if (!string.IsNullOrEmpty(updateDto.ProfilePicture))
+            {
+                try
+                {
+                    var imageData = Convert.FromBase64String(updateDto.ProfilePicture);
+                    updateDefinition.Add(update.Set(u => u.ProfilePicture, imageData));
+                }
+                catch (FormatException)
+                {
+                    return BadRequest( new { message = "Invalid profile picture format. Please provide a valid base64 string." });
+                }
+            }
+
+            if (updateDefinition.Count > 0)
+            {
+                var combinedUpdate = update.Combine(updateDefinition);
+                await _usersCollection.UpdateOneAsync(u => u.Id == userId, combinedUpdate);
+                
+                return Ok(new { message = "User updated succesfully." });
+            }
+
+            return BadRequest(new { message = "No updates provided." });
         }
 
         [Authorize]

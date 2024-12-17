@@ -166,18 +166,6 @@ namespace backend.Controllers
             }
         }
 
-        [HttpPut("wallet-address")]
-        public async Task<IActionResult> SetWalletAddress([FromBody] string address)
-        {
-            var user = await GetCurrentUser();
-            if (user == null) return NotFound(new { message = "User not found." });
-
-            var update = Builders<User>.Update.Set(u => u.WalletAddress, address);
-            await _usersCollection.UpdateOneAsync(u => u.Id == user.Id, update);
-
-            return Ok(new { message = "Wallet address updated successfully" });
-        }
-
         [HttpGet("transactions")]
         public async Task<IActionResult> GetUserTransactions()
         {

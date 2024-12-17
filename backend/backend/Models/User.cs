@@ -13,6 +13,7 @@ namespace backend.Models
         public string UserName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public int TokenBalance { get; set; } = 0;
         public string? WalletAddress { get; set; }
         public byte[]? ProfilePicture { get; set; } 
