@@ -47,10 +47,10 @@ namespace backend.Controllers
         public async Task<IActionResult> GetCurrentUser()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
             var user = await _userRepository.GetUserByIdAsync(userId);
-            
-            if (user == null) 
-                return NotFound("User not found.");
+            if (user == null) return NotFound("User not found.");
 
             var currentUserDto = new CurrentUserDto
             {
@@ -66,16 +66,34 @@ namespace backend.Controllers
             return Ok(currentUserDto);
         }
 
+        [Authorize]
+        [HttpGet("{userId}/info")]
+        public async Task<IActionResult> GetUserInfo(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound("User not found.");
+            
+            var userInfo = new UserInfoDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                ProfilePicture = user.ProfilePicture,
+                FollowingIds = user.FollowingIds,
+                FollowerIds = user.FollowerIds,
+                PostIds = user.PostIds,
+            };
+
+            return Ok(userInfo);
+        }
+
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
         {
-            // Check if the email was already used
             var existingUser = await _userRepository.GetUserByEmailAsync(registrationDto.Email);
             if (existingUser != null)
                 return BadRequest(new { message = "Email already exists." });
 
-            // Check if the username is taken
             var existingUsername = await _userRepository.GetUserByUsernameAsync(registrationDto.UserName);
             if (existingUsername != null)
                 return BadRequest(new { message = "Username already exists." });
@@ -99,7 +117,6 @@ namespace backend.Controllers
         {
             var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
 
-            // Check if the user exists and the password matches
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
                 return Unauthorized(new { message = "Invalid email or password." });
 
@@ -154,7 +171,8 @@ namespace backend.Controllers
         public async Task<IActionResult> FollowUser(string userToFollowId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+            if (currentUserId == null) return Unauthorized();
+
             var currentUser = await _userRepository.GetUserByIdAsync(currentUserId);
             var userToFollow = await _userRepository.GetUserByIdAsync(userToFollowId);
 
@@ -181,15 +199,14 @@ namespace backend.Controllers
         public async Task<IActionResult> UnfollowUser(string userToUnfollowId)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+            if (currentUserId == null) return Unauthorized();
+
             var currentUser = await _userRepository.GetUserByIdAsync(currentUserId);
             var userToUnfollow = await _userRepository.GetUserByIdAsync(userToUnfollowId);
 
-            if (currentUser == null || userToUnfollow == null)
-                return NotFound("User not found.");
+            if (currentUser == null || userToUnfollow == null) return NotFound("User not found.");
                 
-            if (!currentUser.FollowingIds.Contains(userToUnfollowId))
-                return BadRequest("Not following this user.");
+            if (!currentUser.FollowingIds.Contains(userToUnfollowId)) return BadRequest("Not following this user.");
 
             currentUser.FollowingIds.Remove(userToUnfollowId);
             await _userRepository.UpdateUserAsync(currentUser);
@@ -239,10 +256,10 @@ namespace backend.Controllers
         public async Task<IActionResult> UpdateProfilePicture([FromBody] string base64Image)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
             var user = await _userRepository.GetUserByIdAsync(userId);
-            
-            if (user == null) 
-                return NotFound("User not found.");
+            if (user == null) return NotFound("User not found.");
 
             user.ProfilePicture = Convert.FromBase64String(base64Image);
             await _userRepository.UpdateUserAsync(user);

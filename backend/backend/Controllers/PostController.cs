@@ -29,10 +29,10 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] PostCreationDto postDto)
         {
-            if (postDto.ImagesData.Count > 3)
-                return BadRequest("Maximum 3 images allowed.");
+            if (postDto.ImagesData.Count > 3) return BadRequest("Maximum 3 images allowed.");
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
@@ -72,6 +72,8 @@ namespace backend.Controllers
         public async Task<IActionResult> AddComment(string postId, [FromBody] CommentCreationDto commentDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound("User not found.");
 
@@ -122,8 +124,7 @@ namespace backend.Controllers
             var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
             if (post == null) return NotFound("Post not found.");
 
-            if (user.TokenBalance < post.Price)
-                return BadRequest("Insufficient tokens.");
+            if (user.TokenBalance < post.Price) return BadRequest("Insufficient tokens.");
 
             user.TokenBalance -= post.Price;
 
@@ -150,10 +151,10 @@ namespace backend.Controllers
         public async Task<IActionResult> GetUserFeed()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
             var user = await _userRepository.GetUserByIdAsync(userId);
-            
-            if (user == null) 
-                return NotFound("User not found.");
+            if (user == null) return NotFound("User not found.");
 
             var posts = await _postsCollection
                 .Find(p => user.FollowingIds.Contains(p.UserId))

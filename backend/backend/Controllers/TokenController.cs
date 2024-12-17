@@ -86,6 +86,8 @@ namespace backend.Controllers
             if (user == null) return NotFound("User not found");
             if (string.IsNullOrEmpty(user.WalletAddress)) 
                 return BadRequest("Wallet address not set");
+            if (string.IsNullOrEmpty(depositDto.PrivateKey)) 
+                return BadRequest("Private key not present.");
 
             try
             {
