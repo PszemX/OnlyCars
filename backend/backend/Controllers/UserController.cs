@@ -38,7 +38,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetUserById(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
             return Ok(user);
         }
 
@@ -50,7 +50,7 @@ namespace backend.Controllers
             if (userId == null) return Unauthorized();
 
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var currentUserDto = new CurrentUserDto
             {
@@ -71,7 +71,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetUserInfo(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
             
             var userInfo = new UserInfoDto
             {
@@ -108,7 +108,7 @@ namespace backend.Controllers
 
             await _userRepository.CreateUserAsync(newUser);
 
-            return Ok("Registration successful.");
+            return Ok(new { message = "Registration successful." });
         }
 
         [AllowAnonymous]
@@ -147,7 +147,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetPostsByUser(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var posts = await _postsCollection.Find(p => user.PostIds.Contains(p.Id)).ToListAsync();
 
@@ -159,7 +159,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetPurchasedPosts(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var posts = await _postsCollection.Find(p => user.PurchasedPostIds.Contains(p.Id)).ToListAsync();
 
@@ -177,13 +177,13 @@ namespace backend.Controllers
             var userToFollow = await _userRepository.GetUserByIdAsync(userToFollowId);
 
             if (currentUser == null || userToFollow == null)
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
                 
             if (currentUserId == userToFollowId)
-                return BadRequest("Cannot follow yourself.");
+                return BadRequest(new { message = "Cannot follow yourself." });
                 
             if (currentUser.FollowingIds.Contains(userToFollowId))
-                return BadRequest("Already following this user.");
+                return BadRequest(new { message = "Already following this user." });
 
             currentUser.FollowingIds.Add(userToFollowId);
             await _userRepository.UpdateUserAsync(currentUser);
@@ -191,7 +191,7 @@ namespace backend.Controllers
             userToFollow.FollowerIds.Add(currentUserId);
             await _userRepository.UpdateUserAsync(userToFollow);
 
-            return Ok("Successfully followed user.");
+            return Ok(new { message = "Successfully followed user." });
         }
 
         [Authorize]
@@ -204,9 +204,9 @@ namespace backend.Controllers
             var currentUser = await _userRepository.GetUserByIdAsync(currentUserId);
             var userToUnfollow = await _userRepository.GetUserByIdAsync(userToUnfollowId);
 
-            if (currentUser == null || userToUnfollow == null) return NotFound("User not found.");
+            if (currentUser == null || userToUnfollow == null) return NotFound(new { message = "User not found." });
                 
-            if (!currentUser.FollowingIds.Contains(userToUnfollowId)) return BadRequest("Not following this user.");
+            if (!currentUser.FollowingIds.Contains(userToUnfollowId)) return BadRequest(new { message = "Not following this user." });
 
             currentUser.FollowingIds.Remove(userToUnfollowId);
             await _userRepository.UpdateUserAsync(currentUser);
@@ -214,7 +214,7 @@ namespace backend.Controllers
             userToUnfollow.FollowerIds.Remove(currentUserId);
             await _userRepository.UpdateUserAsync(userToUnfollow);
 
-            return Ok("Successfully unfollowed user.");
+            return Ok(new { message = "Successfully unfollowed user." });
         }
 
         [Authorize]
@@ -222,7 +222,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetFollowers(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var followers = await _userRepository.GetUsersByIdsAsync(user.FollowerIds);
             var followerDtos = followers.Select(f => new FollowUserDto 
@@ -239,7 +239,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetFollowing(string userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var following = await _userRepository.GetUsersByIdsAsync(user.FollowingIds);
             var followingDtos = following.Select(f => new FollowUserDto 
@@ -259,12 +259,12 @@ namespace backend.Controllers
             if (userId == null) return Unauthorized();
 
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             user.ProfilePicture = Convert.FromBase64String(base64Image);
             await _userRepository.UpdateUserAsync(user);
             
-            return Ok("Profile picture updated successfully.");
+            return Ok(new { message = "Profile picture updated successfully." });
         }
     }
 }

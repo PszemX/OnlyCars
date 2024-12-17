@@ -30,9 +30,9 @@ namespace backend.Controllers
         public async Task<IActionResult> GetUserWalletBalance()
         {
             var user = await GetCurrentUser();
-            if (user == null) return NotFound("User not found");
+            if (user == null) return NotFound(new { message = "User not found." });
             if (string.IsNullOrEmpty(user.WalletAddress)) 
-                return BadRequest("Wallet address not set");
+                return BadRequest(new { message = "Wallet address not set" });
 
             var balance = await _tokenService.GetBalance(user.WalletAddress);
             return Ok(new { balance });
@@ -67,7 +67,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetUserSiteBalance()
         {
             var user = await GetCurrentUser();
-            if (user == null) return NotFound("User not found");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             return Ok(new { balance = user.TokenBalance });
         }
@@ -83,11 +83,11 @@ namespace backend.Controllers
         public async Task<IActionResult> DepositTokens([FromBody] TokenDepositDto depositDto)
         {
             var user = await GetCurrentUser();
-            if (user == null) return NotFound("User not found");
+            if (user == null) return NotFound(new { message = "User not found." });
             if (string.IsNullOrEmpty(user.WalletAddress)) 
-                return BadRequest("Wallet address not set");
+                return BadRequest(new { message = "Wallet address not set" });
             if (string.IsNullOrEmpty(depositDto.PrivateKey)) 
-                return BadRequest("Private key not present.");
+                return BadRequest(new { message = "Private key not present." });
 
             try
             {
@@ -108,7 +108,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to deposit tokens: {ex.Message}");
+                return BadRequest(new { message = $"Failed to deposit tokens: {ex.Message}" });
             }
         }
 
@@ -116,11 +116,11 @@ namespace backend.Controllers
         public async Task<IActionResult> WithdrawTokens([FromBody] decimal amount)
         {
             var user = await GetCurrentUser();
-            if (user == null) return NotFound("User not found");
+            if (user == null) return NotFound(new { message = "User not found." });
             if (string.IsNullOrEmpty(user.WalletAddress)) 
-                return BadRequest("Wallet address not set");
+                return BadRequest(new { message = "Wallet address not set" });
             if (user.TokenBalance < amount)
-                return BadRequest("Insufficient balance");
+                return BadRequest(new { message = "Insufficient balance" });
 
             try
             {
@@ -142,7 +142,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Failed to withdraw tokens: {ex.Message}");
+                return BadRequest(new { message = $"Failed to withdraw tokens: {ex.Message}" });
             }
         }
 
@@ -150,12 +150,12 @@ namespace backend.Controllers
         public async Task<IActionResult> SetWalletAddress([FromBody] string address)
         {
             var user = await GetCurrentUser();
-            if (user == null) return NotFound("User not found");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var update = Builders<User>.Update.Set(u => u.WalletAddress, address);
             await _usersCollection.UpdateOneAsync(u => u.Id == user.Id, update);
 
-            return Ok("Wallet address updated successfully");
+            return Ok(new { message = "Wallet address updated successfully" });
         }
 
         private async Task<User> GetCurrentUser()

@@ -29,12 +29,12 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromBody] PostCreationDto postDto)
         {
-            if (postDto.ImagesData.Count > 3) return BadRequest("Maximum 3 images allowed.");
+            if (postDto.ImagesData.Count > 3) return BadRequest(new { message = "Maximum 3 images allowed." });
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized();
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var post = new Post
             {
@@ -49,14 +49,14 @@ namespace backend.Controllers
             user.PostIds.Add(post.Id);
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
 
-            return Ok("Post created.");
+            return Ok(new { message = "Post created." });
         }
 
         [HttpGet("{postId}")]
         public async Task<IActionResult> GetPostById(string postId)
         {
             var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null) return NotFound("Post not found.");
+            if (post == null) return NotFound(new { message = "User not found." });
             return Ok(post);
         }
 
@@ -75,10 +75,10 @@ namespace backend.Controllers
             if (userId == null) return Unauthorized();
 
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null) return NotFound("Post not found.");
+            if (post == null) return NotFound(new { message = "Post not found." });
 
             var comment = new Comment
             {
@@ -92,7 +92,7 @@ namespace backend.Controllers
 
             await _postsCollection.ReplaceOneAsync(p => p.Id == post.Id, post);
 
-            return Ok("Comment added.");
+            return Ok(new { message = "Comment added." });
         }
 
         [HttpPost("{postId}/like")]
@@ -100,10 +100,10 @@ namespace backend.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null) return NotFound("Post not found.");
+            if (post == null) return NotFound(new { message = "Post not found." });
 
             if (!user.LikedPostIds.Contains(postId))
             {
@@ -111,7 +111,7 @@ namespace backend.Controllers
                 await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
             }
 
-            return Ok("Post liked.");
+            return Ok(new { message = "Post liked." });
         }
 
         [HttpPost("{postId}/purchase")]
@@ -119,12 +119,12 @@ namespace backend.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null) return NotFound("Post not found.");
+            if (post == null) return NotFound(new { message = "Post not found." });
 
-            if (user.TokenBalance < post.Price) return BadRequest("Insufficient tokens.");
+            if (user.TokenBalance < post.Price) return BadRequest(new { message = "Insufficient tokens." });
 
             user.TokenBalance -= post.Price;
 
@@ -133,14 +133,14 @@ namespace backend.Controllers
 
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
         
-            return Ok("Post unlocked.");
+            return Ok(new { message = "Post unlocked." });
         }
 
         [HttpGet("{postId}/comments")]
         public async Task<IActionResult> GetCommentsByPost(string postId)
         {
             var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
-            if (post == null) return NotFound("Post not found.");
+            if (post == null) return NotFound(new { message = "User not found." });
 
             var comments = await _commentsCollection.Find(c => post.CommentIds.Contains(c.Id)).ToListAsync();
 
@@ -154,7 +154,7 @@ namespace backend.Controllers
             if (userId == null) return Unauthorized();
 
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null) return NotFound("User not found.");
+            if (user == null) return NotFound(new { message = "User not found." });
 
             var posts = await _postsCollection
                 .Find(p => user.FollowingIds.Contains(p.UserId))
