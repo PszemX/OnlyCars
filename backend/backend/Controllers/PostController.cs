@@ -129,6 +129,25 @@ namespace backend.Controllers
             return Ok(new { message = "Post liked." });
         }
 
+        [HttpPost("{postId}/unlike")]
+        public async Task<IActionResult> UnlikePost(string postId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null) return NotFound(new { message = "Post not found." });
+
+            if (user.LikedPostIds.Contains(postId))
+            {
+                user.LikedPostIds.Remove(postId);
+                await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
+            }
+
+            return Ok(new { message = "Post unliked." });
+        }
+
         [HttpPost("{postId}/purchase")]
         public async Task<IActionResult> PurchasePost(string postId)
         {
