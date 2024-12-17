@@ -15,13 +15,17 @@ namespace backend.Controllers
     public class UserController : ControllerBase
     {
         private readonly UserRepository _userRepository;
+        private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Post> _postsCollection;
+        private readonly IMongoCollection<Comment> _commentsCollection;
         private IConfiguration _config;
 
         public UserController(UserRepository userRepository, IMongoDatabase database, IConfiguration config)
         {
             _userRepository = userRepository;
+            _usersCollection = database.GetCollection<User>("Users");
             _postsCollection = database.GetCollection<Post>("Posts");
+            _commentsCollection = database.GetCollection<Comment>("Comments");
             _config = config;
         }
 
@@ -265,6 +269,40 @@ namespace backend.Controllers
             await _userRepository.UpdateUserAsync(user);
             
             return Ok(new { message = "Profile picture updated successfully." });
+        }
+
+        [Authorize]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return BadRequest(new { message = "Username search term is required." });
+                
+            var filter = Builders<User>.Filter.Regex(u => u.UserName, 
+                new MongoDB.Bson.BsonRegularExpression(username, "i"));
+            var users = await _usersCollection.Find(filter).ToListAsync();
+            
+            var userDtos = users.Select(u => new FollowUserDto 
+            { 
+                Id = u.Id, 
+                UserName = u.UserName 
+            }).ToList();
+            
+            return Ok(userDtos);
+        } 
+
+        [Authorize]
+        [HttpGet("{userId}/comments")]
+        public async Task<IActionResult> GetUserComments(string userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            var comments = await _commentsCollection.Find(c => c.UserId == userId)
+                .SortByDescending(c => c.CreatedAt)
+                .ToListAsync();
+
+            return Ok(comments);
         }
     }
 }

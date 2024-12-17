@@ -31,8 +31,7 @@ namespace backend.Controllers
         {
             if (postDto.ImagesData.Count > 3) return BadRequest(new { message = "Maximum 3 images allowed." });
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound(new { message = "User not found." });
 
@@ -71,9 +70,7 @@ namespace backend.Controllers
         [HttpPost("{postId}/comment")]
         public async Task<IActionResult> AddComment(string postId, [FromBody] CommentCreationDto commentDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) return NotFound(new { message = "User not found." });
 
@@ -148,9 +145,7 @@ namespace backend.Controllers
         [HttpGet("feed")]
         public async Task<IActionResult> GetUserFeed()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null) return NotFound(new { message = "User not found." });
 
@@ -160,6 +155,86 @@ namespace backend.Controllers
                 .ToListAsync();
 
             return Ok(posts);
+        }
+
+        [HttpDelete("{postId}")]
+        public async Task<IActionResult> DeletePost(string postId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null) return NotFound(new { message = "Post not found." });
+            
+            if (!user.PostIds.Contains(postId)) return Unauthorized(new { message = "You can only delete your own posts." });
+
+            user.PostIds.Remove(postId);
+            await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
+
+            await _postsCollection.DeleteOneAsync(p => p.Id == postId);
+            await _commentsCollection.DeleteManyAsync(c => post.CommentIds.Contains(c.Id));
+
+            return Ok(new { message = "Post deleted successfully." });
+        }
+
+        [HttpPatch("{postId}")]
+        public async Task<IActionResult> EditPost(string postId, [FromBody] PostUpdateDto updateDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null) return NotFound(new { message = "Post not found." });
+
+            if (!user.PostIds.Contains(postId)) return Unauthorized(new { message = "You can only edit your own posts." });
+
+            var update = Builders<Post>.Update
+                .Set(p => p.Description, updateDto.Description)
+                .Set(p => p.Price, updateDto.Price);
+
+            await _postsCollection.UpdateOneAsync(p => p.Id == postId, update);
+
+            return Ok(new { message = "Post updated successfully." });
+        }
+
+        [HttpDelete("{postId}/comments/{commentId}")]
+        public async Task<IActionResult> DeleteComment(string postId, string commentId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var comment = await _commentsCollection.Find(c => c.Id == commentId).FirstOrDefaultAsync();
+            
+            if (comment == null) return NotFound(new { message = "Comment not found." });
+                
+            if (comment.UserId != userId) return Unauthorized(new { message = "You can only delete your own comments." });
+
+            var post = await _postsCollection.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post == null) return NotFound(new { message = "Post not found." });
+
+            post.CommentIds.Remove(commentId);
+            await _postsCollection.ReplaceOneAsync(p => p.Id == post.Id, post);
+            await _commentsCollection.DeleteOneAsync(c => c.Id == commentId);
+
+            return Ok(new { message = "Comment deleted successfully." });
+        }
+
+        [HttpPatch("{postId}/comments/{commentId}")]
+        public async Task<IActionResult> EditComment(string postId, string commentId, [FromBody] CommentUpdateDto updateDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var comment = await _commentsCollection.Find(c => c.Id == commentId).FirstOrDefaultAsync();
+            
+            if (comment == null) return NotFound(new { message = "Comment not found." });
+                
+            if (comment.UserId != userId) return Unauthorized(new { message = "You can only edit your own comments." });
+
+            var update = Builders<Comment>.Update
+                .Set(c => c.Text, updateDto.Text);
+
+            await _commentsCollection.UpdateOneAsync(c => c.Id == commentId, update);
+
+            return Ok(new { message = "Comment updated successfully." });
         }
     }
 }
