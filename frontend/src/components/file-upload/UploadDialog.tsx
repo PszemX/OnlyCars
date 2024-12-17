@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -10,6 +11,7 @@ import {
 import { FileUpload } from "./FileUpload";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/utils";
 
 export function UploadDialog({
 	open,
@@ -23,38 +25,41 @@ export function UploadDialog({
 	const [tokenAmount, setTokenAmount] = useState<number>(0);
 	const { toast } = useToast();
 
-	const handleUpload = () => {
-		if (files.length === 0) {
+	const handleUpload = async () => {
+		if (files.length === 0 || tokenAmount <= 0) {
 			toast({
 				title: "Error",
-				description: "Please select an image to upload.",
+				description: "Please provide all required data.",
 				variant: "destructive",
 			});
 			return;
 		}
 
-		if (tokenAmount <= 0) {
-			toast({
-				title: "Error",
-				description: "Please enter a valid token amount.",
-				variant: "destructive",
-			});
-			return;
-		}
+		const formData = new FormData();
+		formData.append("Description", description); // Nazwa zgodna z backendem
+		formData.append("Price", tokenAmount.toString()); // Nazwa zgodna z backendem
 
-		console.log("Uploading file:", files[0]);
-		console.log("Description:", description);
-		console.log("Token Amount:", tokenAmount);
-
-		toast({
-			title: "Success",
-			description: "Your image has been uploaded successfully!",
+		files.forEach((file) => {
+			formData.append("Images", file); // Array plików o nazwie "Images"
 		});
 
-		setFiles([]);
-		setDescription("");
-		setTokenAmount(0);
-		onOpenChange(false);
+		try {
+			await apiFetch("http://localhost:5001/api/posts", {
+				method: "POST",
+				body: formData,
+			});
+
+			toast({
+				title: "Success",
+				description: "Image uploaded successfully!",
+			});
+		} catch (error: any) {
+			toast({
+				title: "Error",
+				description: error.message,
+				variant: "destructive",
+			});
+		}
 	};
 
 	return (

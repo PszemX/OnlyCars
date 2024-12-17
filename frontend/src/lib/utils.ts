@@ -18,24 +18,24 @@ export async function apiFetch(url: string, options = {}) {
 		return;
 	}
 
-	const headers = {
-		"Content-Type": "application/json",
-		Authorization: `Bearer ${token}`,
-		...(options as any).headers,
-	};
+	const headers = token
+		? {
+				Authorization: `Bearer ${token}`,
+				...(options as any).headers,
+		  }
+		: { ...(options as any).headers };
 
 	const response = await fetch(url, {
 		...options,
-		headers,
+		headers, // Przeglądarka sama ustawi Content-Type dla FormData
 	});
 
 	if (!response.ok) {
 		if (response.status === 401) {
-			// Unauthorized, redirect to login
 			window.location.href = "/login";
 		}
-		const errorData = await response.json();
-		throw new Error(errorData.message || "Network response was not ok");
+		const errorData = await response.text();
+		throw new Error(errorData || "Network response was not ok");
 	}
 
 	return response.json();

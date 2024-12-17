@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,22 +12,10 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, MessageCircle, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
-
-interface Post {
-	id: number;
-	user: {
-		name: string;
-		avatar: string;
-	};
-	image: string;
-	description: string;
-	likes: number;
-	comments: { user: string; text: string }[];
-	price: number;
-}
+import { apiFetch } from "@/lib/utils";
 
 interface PostModalProps {
-	post: Post;
+	post: any;
 	isUnlocked: boolean;
 	isLiked: boolean;
 	isFollowing: boolean;
@@ -47,16 +36,29 @@ export const PostModal = ({
 	onToggleFollow,
 }: PostModalProps) => {
 	const [newComment, setNewComment] = useState("");
-	const [comments, setComments] = useState(post.comments);
+	const [user, setUser] = useState(null as any);
+	const [comments, setComments] = useState([] as any);
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			apiFetch(`http://localhost:5001/api/users/${post.userId}`, {
+				method: "GET",
+			}).then((data) => setUser(data));
+		};
+		fetchUser();
+	}, [post.userId, post]);
+
+	useEffect(() => {
+		apiFetch(`http://localhost:5001/api/posts/${post.id}/comments`, {
+			method: "GET",
+		}).then((data) => setComments(data));
+	}, [post.id, post.commentIds, comments]);
 
 	const addComment = () => {
-		if (newComment.trim()) {
-			setComments([
-				...comments,
-				{ user: "You", text: newComment.trim() },
-			]);
-			setNewComment("");
-		}
+		apiFetch(`http://localhost:5001/api/posts/${post.id}/comment`, {
+			method: "POST",
+			body: JSON.stringify({ text: newComment.trim() }),
+		});
 	};
 
 	return (
@@ -85,15 +87,15 @@ export const PostModal = ({
 								<div className="flex items-center space-x-4">
 									<Avatar>
 										<AvatarImage
-											src={post.user.avatar}
-											alt={post.user.name}
+											src={user?.profilePictureUrl}
+											alt={user?.userName}
 										/>
 										<AvatarFallback>
-											{post.user.name[0]}
+											{user?.userName[0]}
 										</AvatarFallback>
 									</Avatar>
 									<DialogTitle className="text-sm font-semibold">
-										{post.user.name}
+										{user?.userName}
 									</DialogTitle>
 								</div>
 								<Button
@@ -110,11 +112,11 @@ export const PostModal = ({
 						<ScrollArea className="flex-1 p-4">
 							<p className="text-sm mb-4">
 								<span className="font-semibold">
-									{post.user.name}
+									{user?.userName}
 								</span>{" "}
 								{post.description}
 							</p>
-							{comments.map((comment, index) => (
+							{comments.map((comment: any, index: any) => (
 								<div key={index} className="mb-2">
 									<p className="text-sm">
 										<span className="font-semibold">
