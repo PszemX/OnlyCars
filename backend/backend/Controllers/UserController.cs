@@ -137,7 +137,8 @@ namespace backend.Controllers
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName)
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim("IsAdmin", user.IsAdmin.ToString().ToLower())
                 }),
                 Expires = DateTime.UtcNow.AddHours(2),
                 Issuer = _config["Jwt:Issuer"],

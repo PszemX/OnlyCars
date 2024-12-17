@@ -20,5 +20,6 @@ namespace backend.Models
         public List<string> PostIds { get; set; } = new List<string>();
         public List<string> PurchasedPostIds { get; set; } = new List<string>();
         public List<string> LikedPostIds { get; set; } = new List<string>();
+        public bool IsAdmin { get; set; } = false;
     }
 }

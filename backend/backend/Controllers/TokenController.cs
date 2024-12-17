@@ -5,6 +5,7 @@ using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using backend.Attributes;
 
 namespace backend.Controllers
 {
@@ -41,6 +42,7 @@ namespace backend.Controllers
             return Ok(new { balance });
         }
 
+        [Admin]
         [HttpGet("users-wallet-balances")]
         public async Task<IActionResult> GetUsersWalletInfo()
         {
