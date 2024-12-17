@@ -25,6 +25,7 @@
     "frontend": "file:",
     "jose": "^5.9.3",
     "js-cookie": "^3.0.5",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.451.0",
     "next": "14.2.15",
     "react": "^18",
