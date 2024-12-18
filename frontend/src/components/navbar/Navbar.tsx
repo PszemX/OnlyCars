@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { users } from "@/data/mockUsers";
+import { apiFetch } from "@/lib/utils";
 
 export const Navbar = ({
 	tokenBalance,
@@ -11,18 +12,12 @@ export const Navbar = ({
 	tokenBalance: number;
 	onPurchaseTokens: () => void;
 }) => {
-	const [currentUser, setCurrentUser] = useState<{
-		name: string;
-		avatar: string;
-	} | null>(null);
+	const [currentUser, setCurrentUser] = useState(null as any);
 
 	useEffect(() => {
-		const fetchCurrentUser = async () => {
-			const user = users[3];
-			setCurrentUser(user);
-		};
-
-		fetchCurrentUser();
+		apiFetch("http://localhost:5001/api/users/current").then((userData) => {
+			setCurrentUser(userData);
+		});
 	}, []);
 
 	if (!currentUser) return <div>Loading...</div>;
@@ -40,14 +35,14 @@ export const Navbar = ({
 							Buy Tokens
 						</Button>
 					</Link>
-					<Link href={`/${currentUser.name}`}>
+					<Link href={`/${currentUser?.userName}`}>
 						<Avatar>
 							<AvatarImage
-								src={currentUser.avatar}
-								alt={currentUser.name}
+								src={currentUser?.profilePictureUrl}
+								alt={currentUser?.userName}
 							/>
 							<AvatarFallback>
-								{currentUser.name[0]}
+								{currentUser?.userName[0]}
 							</AvatarFallback>
 						</Avatar>
 					</Link>
