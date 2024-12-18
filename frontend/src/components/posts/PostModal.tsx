@@ -67,7 +67,7 @@ export const PostModal = ({
 				<div className="flex h-[80vh]">
 					<div className="w-2/3 bg-black flex items-center justify-center relative">
 						<img
-							src={post.image}
+							src={post.imageUrls[0]}
 							alt="Car"
 							className={`max-h-full max-w-full object-contain ${
 								!isUnlocked ? "filter blur-md" : ""

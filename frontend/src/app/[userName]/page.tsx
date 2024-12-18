@@ -1,15 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PhotoCard } from "@/components/photo-card/PhotoCard";
 import { FloatingMenu } from "@/components/menu/FloatingMenu";
 import { FollowingMenu } from "@/components/menu/FollowingMenu";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { users } from "@/data/mockUsers";
 import { Navbar } from "@/components/navbar/Navbar";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function UserProfile({
 	params,
@@ -20,12 +22,43 @@ export default function UserProfile({
 	const [unlockedImages, setUnlockedImages] = useState<number[]>([]);
 	const [likedPosts, setLikedPosts] = useState<number[]>([]);
 	const [following, setFollowing] = useState<string[]>([]);
+	const [currentUser, setCurrentUser] = useState({} as any);
+	const [currentUserPosts, setCurrentUserPosts] = useState([] as any);
+	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 
-	const currentUser = users.find((user) => user.name === params.userName);
+	useEffect(() => {
+		setLoading(true);
+		apiFetch(`http://localhost:5001/api/users/`, {
+			method: "GET",
+		}).then((allUsers: any) => {
+			console.log(allUsers);
+			setCurrentUser(
+				allUsers.filter(
+					(user: any) => user.userName === params.userName
+				)[0]
+			);
+		});
+		setLoading(false);
+	}, [params.userName]);
+
+	useEffect(() => {
+		if (!currentUser || !currentUser.id) return;
+		setLoading(true);
+		apiFetch(`http://localhost:5001/api/users/${currentUser.id}/posts`, {
+			method: "GET",
+		}).then((data) => {
+			setCurrentUserPosts(data);
+			setLoading(false);
+		});
+	}, [currentUser]);
 
 	if (!currentUser) {
 		return <p>User not found</p>;
+	}
+
+	if (loading) {
+		return <p>Loading...</p>;
 	}
 
 	const unlockImage = (postId: number, price: number) => {
@@ -86,12 +119,19 @@ export default function UserProfile({
 
 					<main className="container mx-auto px-4 py-8 max-w-2xl">
 						<div className="flex flex-col items-center mb-8 text-center">
-							<div className="avatar w-32 h-32 mb-4">
-								<img
-									src={currentUser.avatar}
-									alt={currentUser.name}
-								/>
-							</div>
+							{currentUser && (
+								<div className="avatar w-32 h-32 mb-4">
+									<Avatar className="w-full h-full bg-white border-4 border-white">
+										<AvatarImage
+											src="/placeholder.svg?height=40&width=40"
+											alt={currentUser.userName || "User"}
+										/>
+										<AvatarFallback className="text-2xl">
+											{currentUser?.userName?.[0] || "?"}
+										</AvatarFallback>
+									</Avatar>
+								</div>
+							)}
 							<h1 className="text-2xl font-bold mb-2">
 								{params.userName}
 							</h1>
@@ -108,18 +148,22 @@ export default function UserProfile({
 							</Button>
 							<div className="flex justify-center space-x-6 mt-4">
 								<span>
-									<strong>{currentUser.posts.length}</strong>{" "}
+									<strong>
+										{currentUser?.postIds?.length}
+									</strong>{" "}
 									posts
 								</span>
 								<span>
-									<strong>{currentUser.followers}</strong>{" "}
+									<strong>
+										{currentUser?.followerIds?.length}
+									</strong>{" "}
 									followers
 								</span>
 							</div>
 						</div>
 
 						<div className="space-y-4">
-							{currentUser.posts.map((post) => (
+							{currentUserPosts.map((post: any) => (
 								<PhotoCard
 									key={post.id}
 									post={post}

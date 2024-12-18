@@ -21,19 +21,23 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { apiFetch } from "@/lib/utils";
 
 export default function BuyTokensPage() {
 	const [tokenAmount, setTokenAmount] = useState(100);
+	const [privateKey, setPrivateKey] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const { toast } = useToast();
 
-	const ethPrice = 0.0005;
-	const totalCost = tokenAmount * ethPrice;
-
 	const handlePurchase = async () => {
 		setIsLoading(true);
-		// Simulating a purchase transaction
-		await new Promise((resolve) => setTimeout(resolve, 2000));
+		await apiFetch(`http://localhost:5001/api/tokens/deposit`, {
+			method: "POST",
+			body: JSON.stringify({
+				privateKey: privateKey,
+				amount: tokenAmount,
+			}),
+		});
 		setIsLoading(false);
 		toast({
 			title: "Purchase Successful!",
@@ -78,35 +82,24 @@ export default function BuyTokensPage() {
 							/>
 						</div>
 					</div>
-					<div className="p-4 bg-gray-100 rounded-lg space-y-2">
-						<div className="flex justify-between items-center">
-							<span className="text-sm text-gray-600">
-								Price per token:
-							</span>
-							<span className="font-medium">{ethPrice} ETH</span>
-						</div>
-						<div className="flex justify-between items-center">
-							<span className="text-sm text-gray-600">
-								Total cost:
-							</span>
-							<span className="font-medium">
-								{totalCost.toFixed(4)} ETH
-							</span>
-						</div>
-					</div>
+					<Label htmlFor="private-key">Private Key</Label>
+					<Input
+						type="text"
+						value={privateKey}
+						onChange={(e) => setPrivateKey(String(e.target.value))}
+						className="w-full"
+						style={{ marginTop: 8 }}
+					/>
 					<TooltipProvider>
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<div className="flex items-center space-x-2 text-sm text-blue-500">
 									<Info size={16} />
-									<span>Why use Ethereum?</span>
+									<span>Why use OCT?</span>
 								</div>
 							</TooltipTrigger>
 							<TooltipContent>
-								<p>
-									Ethereum provides secure and decentralized
-									transactions for purchasing tokens.
-								</p>
+								<p>{"It's good :D"}</p>
 							</TooltipContent>
 						</Tooltip>
 					</TooltipProvider>

@@ -1,5 +1,8 @@
-import { useState } from "react";
-import { PlusCircle, Home, User } from "lucide-react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { useEffect, useState } from "react";
+import { PlusCircle, Home, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UploadDialog } from "@/components/file-upload/UploadDialog";
 import {
@@ -9,9 +12,30 @@ import {
 	TooltipContent,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { apiFetch } from "@/lib/utils";
+import Cookies from "js-cookie";
 
 export const FloatingMenu = () => {
 	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+	const [currentUser, setCurrentUser] = useState("" as any);
+
+	useEffect(() => {
+		apiFetch("http://localhost:5001/api/users/current").then(
+			(userData: any) => {
+				setCurrentUser(userData);
+			}
+		);
+	}, []);
+
+	const handleLogout = () => {
+		Cookies.remove("token");
+		setCurrentUser(null);
+		window.location.href = "/login";
+	};
+
+	if (!currentUser) {
+		return null;
+	}
 
 	return (
 		<TooltipProvider>
@@ -51,7 +75,7 @@ export const FloatingMenu = () => {
 
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Link href="/my-page">
+						<Link href={`/${currentUser?.userName}`}>
 							<Button
 								variant="ghost"
 								size="icon"
@@ -63,6 +87,22 @@ export const FloatingMenu = () => {
 					</TooltipTrigger>
 					<TooltipContent>
 						<p>Profile</p>
+					</TooltipContent>
+				</Tooltip>
+
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="text-white"
+							onClick={handleLogout}
+						>
+							<LogOut className="h-5 w-5" />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>
+						<p>Logout</p>
 					</TooltipContent>
 				</Tooltip>
 			</div>

@@ -25,7 +25,11 @@ export const Navbar = ({
 	return (
 		<header className="bg-white shadow-sm sticky top-0 z-10">
 			<div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-				<h1 className="text-3xl font-bold text-gray-900">OnlyCars</h1>
+				<Link href="/">
+					<h1 className="text-3xl font-bold text-gray-900">
+						OnlyCars
+					</h1>
+				</Link>
 				<div className="flex items-center space-x-4">
 					<span className="text-sm font-medium text-gray-500">
 						Token Balance: {tokenBalance}
