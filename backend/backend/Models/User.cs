@@ -8,20 +8,18 @@ namespace backend.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
-
-        [BsonElement("UserName")]
-        public string UserName { get; set; } = null!;
-
-        [BsonElement("Email")]
-        public string Email { get; set; } = null!;
-
-        [BsonElement("PasswordHash")]
-        public string PasswordHash { get; set; } = null!;
-
-        [BsonElement("TokenBalance")]
-        public int TokenBalance { get; set; }
-
-        [BsonElement("Posts")]
-        public List<Post> Posts { get; set; } = new List<Post>();
+        public List<string> FollowingIds { get; set; } = new List<string>();
+        public List<string> FollowerIds { get; set; } = new List<string>();
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int TokenBalance { get; set; } = 0;
+        public string? WalletAddress { get; set; }
+        public string? ProfilePictureUrl { get; set; } 
+        public List<string> PostIds { get; set; } = new List<string>();
+        public List<string> PurchasedPostIds { get; set; } = new List<string>();
+        public List<string> LikedPostIds { get; set; } = new List<string>();
+        public bool IsAdmin { get; set; } = false;
     }
 }
