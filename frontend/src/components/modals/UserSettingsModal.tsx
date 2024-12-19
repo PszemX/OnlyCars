@@ -26,6 +26,9 @@ export const UserSettingsButton = () => {
 	const [password, setPassword] = useState("");
 	const [newPassword, setNewPassword] = useState("");
 	const [confirmNewPassword, setConfirmNewPassword] = useState("");
+	const [newPasswordStrength, setNewPasswordStrength] = useState(0);
+	const [newPasswordsMatch, setNewPasswordsMatch] = useState(true);
+	const [formValid, setFormValid] = useState(false);
 	const [open, setOpen] = useState(false);
 	const { toast } = useToast();
 
@@ -39,6 +42,39 @@ export const UserSettingsButton = () => {
 			}
 		);
 	}, []);
+
+	useEffect(() => {
+		checkNewPasswordStrength(newPassword);
+		setNewPasswordsMatch(newPassword === confirmNewPassword);
+		setFormValid(
+			password !== "" &&
+				newPassword !== "" &&
+				confirmNewPassword !== "" &&
+				newPassword === confirmNewPassword
+		);
+	}, [password, newPassword, confirmNewPassword]);
+
+	const checkNewPasswordStrength = (newPassword: string) => {
+		let strength = 0;
+		if (newPassword.length > 6) strength += 1;
+		if (/[a-z]/.test(newPassword)) strength += 1;
+		if (/[A-Z]/.test(newPassword)) strength += 1;
+		if (/[0-9]/.test(newPassword)) strength += 1;
+		if (/[$@#&!]/.test(newPassword)) strength += 1;
+		setNewPasswordStrength((strength / 5) * 100);
+	};
+
+	const getPasswordStrengthColor = () => {
+		if (newPasswordStrength <= 33) return "bg-red-500";
+		if (newPasswordStrength <= 66) return "bg-orange-500";
+		return "bg-green-500";
+	};
+
+	const getPasswordStrengthText = () => {
+		if (newPasswordStrength <= 33) return "Weak";
+		if (newPasswordStrength <= 66) return "Medium";
+		return "Strong";
+	};
 
 	const handleSaveProfile = async () => {
 		if (!password) {
@@ -146,7 +182,7 @@ export const UserSettingsButton = () => {
 					</TabsList>
 					<TabsContent value="profile">
 						<div className="grid gap-4 py-4">
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="userName"
 									className="text-right"
@@ -162,7 +198,7 @@ export const UserSettingsButton = () => {
 									className="col-span-3"
 								/>
 							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="description"
 									className="text-right"
@@ -178,7 +214,7 @@ export const UserSettingsButton = () => {
 									className="col-span-3"
 								/>
 							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="walletAddress"
 									className="text-right"
@@ -194,7 +230,7 @@ export const UserSettingsButton = () => {
 									className="col-span-3"
 								/>
 							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="password"
 									className="text-right"
@@ -214,14 +250,17 @@ export const UserSettingsButton = () => {
 							</div>
 						</div>
 						<DialogFooter>
-							<Button onClick={handleSaveProfile}>
+							<Button
+								onClick={handleSaveProfile}
+								disabled={!password}
+							>
 								Save changes
 							</Button>
 						</DialogFooter>
 					</TabsContent>
 					<TabsContent value="password">
 						<div className="grid gap-4 py-4">
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="password"
 									className="text-right"
@@ -239,7 +278,7 @@ export const UserSettingsButton = () => {
 									required
 								/>
 							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="newPassword"
 									className="text-right"
@@ -255,8 +294,24 @@ export const UserSettingsButton = () => {
 									}
 									className="col-span-3"
 								/>
+								{newPassword && (
+									<div className="space-y-1">
+										<div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+											<div
+												className={`h-full ${getPasswordStrengthColor()}`}
+												style={{
+													width: `${newPasswordStrength}%`,
+												}}
+											></div>
+										</div>
+										<p className="text-sm text-gray-600">
+											Password strength:{" "}
+											{getPasswordStrengthText()}
+										</p>
+									</div>
+								)}
 							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
+							<div className="space-y-2">
 								<Label
 									htmlFor="confirmNewPassword"
 									className="text-right"
@@ -272,10 +327,18 @@ export const UserSettingsButton = () => {
 									}
 									className="col-span-3"
 								/>
+								{!newPasswordsMatch && confirmNewPassword && (
+									<p className="text-sm text-red-500">
+										Passwords do not match
+									</p>
+								)}
 							</div>
 						</div>
 						<DialogFooter>
-							<Button onClick={handleChangePassword}>
+							<Button
+								onClick={handleChangePassword}
+								disabled={!formValid}
+							>
 								Change Password
 							</Button>
 						</DialogFooter>
