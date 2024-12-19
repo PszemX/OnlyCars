@@ -20,10 +20,12 @@ export default function RootLayout({
 		<FollowingProvider>
 			<LikeProvider>
 				<html lang="en">
-					<Navbar />
-					<body>{children}</body>
-					<FloatingMenu />
-					<FollowingMenu />
+					<body>
+						<Navbar />
+						{children}
+						<FloatingMenu />
+						<FollowingMenu />
+					</body>
 				</html>
 			</LikeProvider>
 		</FollowingProvider>

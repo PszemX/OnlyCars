@@ -5,7 +5,7 @@ import { apiFetch } from "@/lib/utils";
 interface LikeContextType {
 	isLiked: (postId: string) => boolean;
 	toggleLike: (postId: string) => void;
-	refreshLikes: () => void;
+	//refreshLikes: () => void;
 }
 
 const LikeContext = createContext<LikeContextType | undefined>(undefined);
@@ -13,18 +13,18 @@ const LikeContext = createContext<LikeContextType | undefined>(undefined);
 export const LikeProvider = ({ children }: { children: React.ReactNode }) => {
 	const [likedPostIds, setLikedPostIds] = useState<string[]>([]);
 
-	useEffect(() => {
-		const fetchLikedPosts = async () => {
-			try {
-				const data = await apiFetch(
-					"http://localhost:5001/api/users/current"
-				);
-				setLikedPostIds(data.likedPostIds || []);
-			} catch (error) {
-				console.error("Failed to fetch liked posts:", error);
-			}
-		};
+	const fetchLikedPosts = async () => {
+		try {
+			const data = await apiFetch(
+				"http://localhost:5001/api/users/current"
+			);
+			setLikedPostIds(data?.likedPostIds || []);
+		} catch (error) {
+			console.error("Failed to fetch liked posts:", error);
+		}
+	};
 
+	useEffect(() => {
 		fetchLikedPosts();
 	}, []);
 
@@ -41,19 +41,12 @@ export const LikeProvider = ({ children }: { children: React.ReactNode }) => {
 		);
 	};
 
-	const refreshLikes = async () => {
-		try {
-			const data = await apiFetch(
-				"http://localhost:5001/api/posts/liked"
-			);
-			setLikedPostIds(data.map((post: any) => post.id));
-		} catch (error) {
-			console.error("Failed to refresh liked posts:", error);
-		}
-	};
+	// const refreshLikes = async () => {
+	// 	await fetchLikedPosts();
+	// };
 
 	return (
-		<LikeContext.Provider value={{ isLiked, toggleLike, refreshLikes }}>
+		<LikeContext.Provider value={{ isLiked, toggleLike }}>
 			{children}
 		</LikeContext.Provider>
 	);
