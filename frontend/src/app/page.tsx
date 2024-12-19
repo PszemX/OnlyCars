@@ -6,6 +6,8 @@ import { PhotoCard } from "@/components/photo-card/PhotoCard";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export default function OnlyCars() {
 	const authenticated = useAuth();
@@ -101,21 +103,19 @@ export default function OnlyCars() {
 			<div className="min-h-screen bg-gray-100 flex">
 				<div className="flex-grow overflow-y-auto">
 					<main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-						<div className="flex items-center justify-end mb-4">
+						{/* TODO: FIX THAT LATER */}
+						{/* <div className="flex items-center justify-end mb-4">
 							<label className="flex items-center space-x-2">
-								<input
-									type="checkbox"
+								<Switch
+									id="show-all-posts"
 									checked={showAllPosts}
-									onChange={toggleShowAllPosts}
-									className="form-checkbox"
+									onCheckedChange={toggleShowAllPosts}
 								/>
-								<span className="text-sm">
-									{showAllPosts
-										? "Show All Posts"
-										: "Show Followed Posts"}
-								</span>
+								<Label htmlFor="show-all-posts">
+									Show Followed Posts
+								</Label>
 							</label>
-						</div>
+						</div> */}
 						<div className="space-y-6">
 							{posts.map((post: any) => (
 								<PhotoCard
