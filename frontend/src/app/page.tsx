@@ -13,7 +13,8 @@ export default function OnlyCars() {
 	const authenticated = useAuth();
 	const [posts, setPosts] = useState([]);
 	const [unlockedImages, setUnlockedImages] = useState<string[]>([]);
-	const [showAllPosts, setShowAllPosts] = useState(true);
+	const [showPostsOfFollowedUsers, setShowPostsOfFollowedUsers] =
+		useState(false);
 	const { toast } = useToast();
 
 	useEffect(() => {
@@ -30,9 +31,9 @@ export default function OnlyCars() {
 
 	useEffect(() => {
 		if (authenticated) {
-			const endpoint = showAllPosts
-				? "http://localhost:5001/api/posts/all"
-				: "http://localhost:5001/api/posts/feed";
+			const endpoint = showPostsOfFollowedUsers
+				? "http://localhost:5001/api/posts/feed"
+				: "http://localhost:5001/api/posts/all";
 
 			apiFetch(endpoint)
 				.then((data) => {
@@ -48,14 +49,14 @@ export default function OnlyCars() {
 					console.error(error);
 				});
 		}
-	}, [authenticated, showAllPosts]);
+	}, [authenticated, showPostsOfFollowedUsers]);
 
 	if (!authenticated) {
 		return null;
 	}
 
-	const toggleShowAllPosts = () => {
-		setShowAllPosts((prev) => !prev);
+	const toggleShowPostsOfFollowedUsers = () => {
+		setShowPostsOfFollowedUsers((prev) => !prev);
 	};
 
 	const handleUnlockImage = async (postId: string, price: number) => {
@@ -92,19 +93,23 @@ export default function OnlyCars() {
 			<div className="min-h-screen bg-gray-100 flex">
 				<div className="flex-grow overflow-y-auto">
 					<main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-						{/* TODO: FIX THAT LATER */}
-						{/* <div className="flex items-center justify-end mb-4">
+						<div className="flex items-center justify-end mb-4">
 							<label className="flex items-center space-x-2">
+								<Label htmlFor="show-all-posts">
+									Show all posts
+								</Label>
 								<Switch
 									id="show-all-posts"
-									checked={showAllPosts}
-									onCheckedChange={toggleShowAllPosts}
+									checked={showPostsOfFollowedUsers}
+									onCheckedChange={
+										toggleShowPostsOfFollowedUsers
+									}
 								/>
 								<Label htmlFor="show-all-posts">
-									Show Followed Posts
+									Show posts of followed users
 								</Label>
 							</label>
-						</div> */}
+						</div>
 						<div className="space-y-6">
 							{posts.map((post: any) => (
 								<PhotoCard
