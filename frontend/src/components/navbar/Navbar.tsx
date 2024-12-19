@@ -1,10 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiFetch } from "@/lib/utils";
-import { Bitcoin, HandCoins } from "lucide-react";
+import { TokensModal } from "../modals/TokensModal";
 
 export const Navbar = () => {
 	const [currentUser, setCurrentUser] = useState(null as any);
@@ -20,14 +19,6 @@ export const Navbar = () => {
 		if (currentUser) setTokenBalance(currentUser.tokenBalance);
 	}, [currentUser]);
 
-	const handleDepositTokens = () => {
-		console.log("Deposit");
-	};
-
-	const handleWithdrawTokens = () => {
-		console.log("Withdraw");
-	};
-
 	if (!currentUser) return <div>Loading...</div>;
 
 	return (
@@ -42,21 +33,7 @@ export const Navbar = () => {
 					<span className="text-sm font-medium text-gray-500">
 						Token Balance: {tokenBalance}
 					</span>
-					<Button
-						onClick={handleDepositTokens}
-						className="flex gap-2"
-					>
-						<Bitcoin />
-						Deposit
-					</Button>
-					<Button
-						variant="outline"
-						onClick={handleWithdrawTokens}
-						className="flex gap-2"
-					>
-						<HandCoins />
-						Withdraw
-					</Button>
+					<TokensModal />
 					<Link href={`/${currentUser?.userName}`}>
 						<Avatar>
 							<AvatarImage

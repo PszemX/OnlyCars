@@ -26,7 +26,6 @@ export default function UserProfile({
 		apiFetch(`http://localhost:5001/api/users/`, {
 			method: "GET",
 		}).then((allUsers: any) => {
-			console.log(allUsers);
 			setCurrentUser(
 				allUsers.filter(
 					(user: any) => user.userName === params.userName

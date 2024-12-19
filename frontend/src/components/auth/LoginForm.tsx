@@ -38,7 +38,7 @@ export default function LoginForm() {
 			if (response.ok) {
 				const data = await response.json();
 				Cookies.set("token", data.token, { expires: 1 });
-				router.push("/"); // Redirect to main page after successful login
+				router.push("/");
 			} else {
 				const data = await response.json();
 				throw new Error(data.message || "Login failed.");
