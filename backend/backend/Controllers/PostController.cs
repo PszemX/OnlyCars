@@ -166,12 +166,18 @@ namespace backend.Controllers
 
             if (user.TokenBalance < post.Price) return BadRequest(new { message = "Insufficient tokens." });
 
+            var postCreator = await _usersCollection.Find(u => u.Id == post.UserId).FirstOrDefaultAsync();
+            if (postCreator == null) return NotFound(new { message = "Post creator not found." });
+
+            var creatorShare = post.Price - 1;
             user.TokenBalance -= post.Price;
+            postCreator.TokenBalance += creatorShare;
 
             if (!user.PurchasedPostIds.Contains(postId))
                 user.PurchasedPostIds.Add(postId);
 
             await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
+            await _usersCollection.ReplaceOneAsync(u => u.Id == postCreator.Id, postCreator);
         
             return Ok(new { message = "Post unlocked." });
         }

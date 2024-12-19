@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "../ui/toaster";
 
 const LikeButton = ({ postId }: { postId: string }) => {
-	const { isLiked, toggleLike, refreshLikes } = useLike();
+	const { isLiked, toggleLike } = useLike();
 	const { toast } = useToast();
 
 	const onToggleLike = async () => {
@@ -18,7 +18,7 @@ const LikeButton = ({ postId }: { postId: string }) => {
 				await likePost();
 			}
 			toggleLike(postId);
-			await refreshLikes();
+			//await refreshLikes();
 		} catch (error) {
 			console.error("Error toggling like:", error);
 		}
