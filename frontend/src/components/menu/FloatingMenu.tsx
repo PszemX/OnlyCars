@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PlusCircle, Home, User, LogOut } from "lucide-react";
+import { PlusCircle, Home, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UploadDialog } from "@/components/file-upload/UploadDialog";
 import {
@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { apiFetch } from "@/lib/utils";
 import Cookies from "js-cookie";
+import { UserSettingsButton } from "../modals/UserSettingsModal";
 
 export const FloatingMenu = () => {
 	const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -74,18 +75,10 @@ export const FloatingMenu = () => {
 
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Link href={`/${currentUser?.userName}`}>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="text-white"
-							>
-								<User className="h-5 w-5" />
-							</Button>
-						</Link>
+						<UserSettingsButton />
 					</TooltipTrigger>
 					<TooltipContent>
-						<p>Profile</p>
+						<p>Settings</p>
 					</TooltipContent>
 				</Tooltip>
 

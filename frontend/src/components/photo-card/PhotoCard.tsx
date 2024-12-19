@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { MessageCircle } from "lucide-react";
 import Link from "next/link";
-import { PostModal } from "@/components/posts/PostModal";
+import { PostModal } from "@/components/modals/PostModal";
 import { apiFetch } from "@/lib/utils";
 import FollowingButton from "../button/FollowingButton";
 import LikeButton from "../button/LikeButton";
