@@ -64,6 +64,7 @@ namespace backend.Controllers
                 Id = user.Id,
                 UserName = user.UserName,
                 Description = user.Description,
+                WalletAddress = user.WalletAddress,
                 TokenBalance = user.TokenBalance,
                 FollowingUserIds = user.FollowingIds,
                 LikedPostIds = user.LikedPostIds,
