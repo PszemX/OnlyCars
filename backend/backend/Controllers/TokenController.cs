@@ -53,6 +53,7 @@ namespace backend.Controllers
             {
                 var walletInfo = new UserWalletInfoDto
                 {
+                    UserId = user.Id,
                     UserName = user.UserName,
                     WalletAddress = user.WalletAddress
                 };
