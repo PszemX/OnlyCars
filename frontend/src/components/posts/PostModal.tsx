@@ -9,7 +9,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/utils";
 import FollowingButton from "../button/FollowingButton";
@@ -50,11 +50,30 @@ export const PostModal = ({
 		}).then((data) => setComments(data));
 	}, [post.id, post.commentIds, comments]);
 
-	const addComment = () => {
-		apiFetch(`http://localhost:5001/api/posts/${post.id}/comment`, {
-			method: "POST",
-			body: JSON.stringify({ text: newComment.trim() }),
-		});
+	const addComment = async () => {
+		const trimmedComment = newComment.trim();
+
+		if (!trimmedComment) return;
+
+		try {
+			const newCommentData = await apiFetch(
+				`http://localhost:5001/api/posts/${post.id}/comment`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ text: trimmedComment }),
+				}
+			);
+
+			setComments((prevComments: any) => [
+				...prevComments,
+				newCommentData,
+			]);
+
+			setNewComment("");
+		} catch (error: any) {
+			console.error("Error adding comment:", error);
+		}
 	};
 
 	return (
@@ -132,9 +151,6 @@ export const PostModal = ({
 								</Button>
 								<Button variant="ghost" size="icon">
 									<MessageCircle className="h-4 w-4" />
-								</Button>
-								<Button variant="ghost" size="icon">
-									<Send className="h-4 w-4" />
 								</Button>
 							</div>
 							<p className="text-sm font-semibold mb-2">
