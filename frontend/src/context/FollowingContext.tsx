@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { apiFetch } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
 
 interface FollowingContextType {
 	followingUserIds: string[];
@@ -20,21 +21,24 @@ export const FollowingProvider = ({
 	children: React.ReactNode;
 }) => {
 	const [followingUserIds, setFollowingUserIds] = useState<string[]>([]);
+	const { authenticated } = useAuth();
 
 	useEffect(() => {
-		const fetchFollowingUsers = async () => {
-			const currentUser = await apiFetch(
-				"http://localhost:5001/api/users/current"
-			);
-			if (currentUser) {
-				const data = await apiFetch(
-					`http://localhost:5001/api/users/${currentUser.id}/following`
+		if (authenticated) {
+			const fetchFollowingUsers = async () => {
+				const currentUser = await apiFetch(
+					"http://localhost:5001/api/users/current"
 				);
-				setFollowingUserIds(data.map((user: any) => user.id));
-			}
-		};
-		fetchFollowingUsers();
-	}, []);
+				if (currentUser) {
+					const data = await apiFetch(
+						`http://localhost:5001/api/users/${currentUser.id}/following`
+					);
+					setFollowingUserIds(data.map((user: any) => user.id));
+				}
+			};
+			fetchFollowingUsers();
+		}
+	}, [authenticated]);
 
 	const refreshFollowingUsers = async () => {
 		const currentUser = await apiFetch(
