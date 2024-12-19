@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,27 +12,24 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, MessageCircle, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/utils";
+import FollowingButton from "../button/FollowingButton";
 
 interface PostModalProps {
 	post: any;
 	isUnlocked: boolean;
 	isLiked: boolean;
-	isFollowing: boolean;
 	onClose: () => void;
 	onUnlock: () => void;
 	onToggleLike: () => void;
-	onToggleFollow: () => void;
 }
 
 export const PostModal = ({
 	post,
 	isUnlocked,
 	isLiked,
-	isFollowing,
 	onClose,
 	onUnlock,
 	onToggleLike,
-	onToggleFollow,
 }: PostModalProps) => {
 	const [newComment, setNewComment] = useState("");
 	const [user, setUser] = useState(null as any);
@@ -98,15 +94,7 @@ export const PostModal = ({
 										{user?.userName}
 									</DialogTitle>
 								</div>
-								<Button
-									variant={
-										isFollowing ? "outline" : "default"
-									}
-									size="sm"
-									onClick={onToggleFollow}
-								>
-									{isFollowing ? "Following" : "Follow"}
-								</Button>
+								<FollowingButton userId={user?.id as string} />
 							</div>
 						</DialogHeader>
 						<ScrollArea className="flex-1 p-4">

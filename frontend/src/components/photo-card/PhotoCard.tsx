@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,27 +12,24 @@ import { Heart, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { PostModal } from "@/components/posts/PostModal";
 import { apiFetch } from "@/lib/utils";
+import FollowingButton from "../button/FollowingButton";
 
 interface PhotoCardProps {
 	post: any;
 	isUnlocked: boolean;
 	isLiked: boolean;
-	isFollowing: boolean;
 	onUnlock: () => void;
 	onOpenPost: (post: any) => void;
 	onToggleLike: () => void;
-	onToggleFollow: () => void;
 }
 
 export const PhotoCard = ({
 	post,
 	isUnlocked,
 	isLiked,
-	isFollowing,
 	onUnlock,
 	onOpenPost,
 	onToggleLike,
-	onToggleFollow,
 }: PhotoCardProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [user, setUser] = useState(null as any);
@@ -70,13 +66,7 @@ export const PhotoCard = ({
 								{user?.userName}
 							</h2>
 						</Link>
-						<Button
-							variant={isFollowing ? "outline" : "default"}
-							size="sm"
-							onClick={onToggleFollow}
-						>
-							{isFollowing ? "Following" : "Follow"}
-						</Button>
+						<FollowingButton userId={post.userId as string} />
 					</div>
 				</CardHeader>
 				<CardContent className="p-0">
@@ -140,11 +130,9 @@ export const PhotoCard = ({
 					post={post}
 					isUnlocked={isUnlocked}
 					isLiked={isLiked}
-					isFollowing={isFollowing}
 					onClose={() => setIsModalOpen(false)}
 					onUnlock={onUnlock}
 					onToggleLike={onToggleLike}
-					onToggleFollow={onToggleFollow}
 				/>
 			)}
 		</>

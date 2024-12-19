@@ -1,24 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiFetch } from "@/lib/utils";
+import { Bitcoin, HandCoins } from "lucide-react";
 
-export const Navbar = ({
-	tokenBalance,
-	onPurchaseTokens,
-}: {
-	tokenBalance: number;
-	onPurchaseTokens: () => void;
-}) => {
+export const Navbar = () => {
 	const [currentUser, setCurrentUser] = useState(null as any);
+	const [tokenBalance, setTokenBalance] = useState(0);
 
 	useEffect(() => {
 		apiFetch("http://localhost:5001/api/users/current").then((userData) => {
 			setCurrentUser(userData);
 		});
 	}, []);
+
+	useEffect(() => {
+		if (currentUser) setTokenBalance(currentUser.tokenBalance);
+	}, [currentUser]);
+
+	const handleDepositTokens = () => {
+		console.log("Deposit");
+		// router.push("/buy-tokens");
+	};
+
+	const handleWithdrawTokens = () => {
+		console.log("Withdraw");
+	};
 
 	if (!currentUser) return <div>Loading...</div>;
 
@@ -34,11 +43,21 @@ export const Navbar = ({
 					<span className="text-sm font-medium text-gray-500">
 						Token Balance: {tokenBalance}
 					</span>
-					<Link href="/buy-tokens">
-						<Button variant="outline" onClick={onPurchaseTokens}>
-							Buy Tokens
-						</Button>
-					</Link>
+					<Button
+						onClick={handleDepositTokens}
+						className="flex gap-2"
+					>
+						<Bitcoin />
+						Deposit
+					</Button>
+					<Button
+						variant="outline"
+						onClick={handleWithdrawTokens}
+						className="flex gap-2"
+					>
+						<HandCoins />
+						Withdraw
+					</Button>
 					<Link href={`/${currentUser?.userName}`}>
 						<Avatar>
 							<AvatarImage

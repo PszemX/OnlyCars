@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Navbar } from "@/components/navbar/Navbar";
+import { FloatingMenu } from "@/components/menu/FloatingMenu";
+import { FollowingMenu } from "@/components/menu/FollowingMenu";
+import { FollowingProvider } from "@/context/FollowingContext";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -12,8 +16,13 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
-			<body>{children}</body>
-		</html>
+		<FollowingProvider>
+			<html lang="en">
+				<Navbar />
+				<body>{children}</body>
+				<FloatingMenu />
+				<FollowingMenu />
+			</html>
+		</FollowingProvider>
 	);
 }
