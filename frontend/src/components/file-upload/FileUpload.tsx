@@ -137,7 +137,7 @@ export const FileUpload = ({
 			const rejected = fileRejections.map((fr) => fr.file);
 			setFiles([]);
 			setRejectedFiles(rejected);
-			onChange && onChange([]); // Notify parent that no valid files are selected
+			onChange && onChange([]);
 		},
 	});
 

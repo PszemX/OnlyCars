@@ -35,11 +35,11 @@ export function UploadDialog({
 		}
 
 		const formData = new FormData();
-		formData.append("Description", description); // Nazwa zgodna z backendem
-		formData.append("Price", tokenAmount.toString()); // Nazwa zgodna z backendem
+		formData.append("Description", description);
+		formData.append("Price", tokenAmount.toString());
 
 		files.forEach((file) => {
-			formData.append("Images", file); // Array plików o nazwie "Images"
+			formData.append("Images", file);
 		});
 
 		try {
@@ -52,6 +52,11 @@ export function UploadDialog({
 				title: "Success",
 				description: "Image uploaded successfully!",
 			});
+
+			onOpenChange(false);
+			setFiles([]);
+			setDescription("");
+			setTokenAmount(0);
 		} catch (error: any) {
 			toast({
 				title: "Error",
@@ -63,7 +68,7 @@ export function UploadDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Upload a New Image</DialogTitle>
 				</DialogHeader>
