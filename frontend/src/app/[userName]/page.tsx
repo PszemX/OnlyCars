@@ -114,7 +114,7 @@ export default function UserProfile({
 								<div className="avatar w-32 h-32 mb-4">
 									<Avatar className="w-full h-full bg-white border-4 border-white">
 										<AvatarImage
-											src="/placeholder.svg?height=40&width=40"
+											//src="/placeholder.svg?height=40&width=40"
 											alt={currentUser.userName || "User"}
 										/>
 										<AvatarFallback className="text-2xl">

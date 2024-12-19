@@ -48,8 +48,8 @@ export const FollowingMenu = () => {
 							<Avatar>
 								<AvatarImage
 									src={
-										user?.profilePicture ||
-										"/placeholder.svg?height=40&width=40"
+										user?.profilePicture //||
+										//"/placeholder.svg?height=40&width=40"
 									}
 									alt={user?.userName}
 								/>
