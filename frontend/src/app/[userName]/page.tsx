@@ -16,7 +16,6 @@ export default function UserProfile({
 }) {
 	const [tokenBalance, setTokenBalance] = useState(100);
 	const [unlockedImages, setUnlockedImages] = useState<number[]>([]);
-	const [likedPosts, setLikedPosts] = useState<number[]>([]);
 	const [currentUser, setCurrentUser] = useState({} as any);
 	const [currentUserPosts, setCurrentUserPosts] = useState([] as any);
 	const [loading, setLoading] = useState(false);
@@ -77,14 +76,6 @@ export default function UserProfile({
 		}
 	};
 
-	const toggleLike = (postId: number) => {
-		setLikedPosts((prev) =>
-			prev.includes(postId)
-				? prev.filter((id) => id !== postId)
-				: [...prev, postId]
-		);
-	};
-
 	return (
 		<>
 			<div className="min-h-screen bg-gray-100 flex">
@@ -137,14 +128,12 @@ export default function UserProfile({
 									isUnlocked={unlockedImages.includes(
 										post.id
 									)}
-									isLiked={likedPosts.includes(post.id)}
 									onUnlock={() =>
 										unlockImage(post.id, post.price)
 									}
 									onOpenPost={() =>
 										console.log("Post Opened", post.id)
 									}
-									onToggleLike={() => toggleLike(post.id)}
 								/>
 							))}
 						</div>
