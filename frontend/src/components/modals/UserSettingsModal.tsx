@@ -87,15 +87,15 @@ export const UserSettingsButton = () => {
 		}
 
 		try {
+			const formData = new FormData();
+			formData.append('password', password);
+        	if (userName) formData.append('userName', userName);
+        	if (description) formData.append('description', description);
+        	if (walletAddress) formData.append('walletAddress', walletAddress);
+
 			await apiFetch("http://localhost:5001/api/users/update", {
 				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					password,
-					userName,
-					description,
-					walletAddress,
-				}),
+				body: formData,
 			});
 
 			toast({
@@ -125,13 +125,13 @@ export const UserSettingsButton = () => {
 		}
 
 		try {
+			const formData = new FormData();
+			formData.append('password', password);
+			formData.append('newPassword', newPassword);
+
 			await apiFetch("http://localhost:5001/api/users/update", {
 				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					password,
-					newPassword,
-				}),
+				body: formData,
 			});
 
 			toast({
