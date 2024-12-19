@@ -17,8 +17,12 @@ import { apiFetch } from "@/lib/utils";
 import { Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { forwardRef } from "react";
+import type { ButtonHTMLAttributes } from "react";
 
-export const UserSettingsButton = () => {
+interface UserSettingsButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
+
+export const UserSettingsButton = forwardRef<HTMLButtonElement, UserSettingsButtonProps>((props, ref) => {
 	const [currentUser, setCurrentUser] = useState<any>(null);
 	const [userName, setUserName] = useState("");
 	const [description, setDescription] = useState("");
@@ -158,8 +162,14 @@ export const UserSettingsButton = () => {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon" className="text-white">
-					<Settings className="h-5 w-5" />
+				<Button 
+					ref={ref}
+					variant="ghost" 
+					size="icon" 
+					className="text-white"
+					{...props}
+				>
+				<Settings className="h-5 w-5" />
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
@@ -347,4 +357,4 @@ export const UserSettingsButton = () => {
 			</DialogContent>
 		</Dialog>
 	);
-};
+});
