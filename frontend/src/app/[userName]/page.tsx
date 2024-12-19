@@ -42,7 +42,13 @@ export default function UserProfile({
 		apiFetch(`http://localhost:5001/api/users/${currentUser.id}/posts`, {
 			method: "GET",
 		}).then((data) => {
-			setCurrentUserPosts(data);
+			setCurrentUserPosts(
+				data.sort(
+					(a: any, b: any) =>
+						new Date(b.createdAt).getTime() -
+						new Date(a.createdAt).getTime()
+				)
+			);
 			setLoading(false);
 		});
 	}, [currentUser]);

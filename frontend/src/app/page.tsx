@@ -36,7 +36,13 @@ export default function OnlyCars() {
 
 			apiFetch(endpoint)
 				.then((data) => {
-					setPosts(data);
+					setPosts(
+						data.sort(
+							(a: any, b: any) =>
+								new Date(b.createdAt).getTime() -
+								new Date(a.createdAt).getTime()
+						)
+					);
 				})
 				.catch((error) => {
 					console.error(error);
