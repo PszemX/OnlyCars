@@ -129,7 +129,7 @@ namespace backend.Controllers
             return Ok(new { message = "Post liked." });
         }
 
-        [HttpDelete("{postId}/unlike")]
+        [HttpDelete("{postId}/like")]
         public async Task<IActionResult> UnlikePost(string postId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
