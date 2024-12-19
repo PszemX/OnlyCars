@@ -14,44 +14,49 @@ export default function OnlyCars() {
 	const [posts, setPosts] = useState([]);
 	const [userId, setUserId] = useState("");
 	const [unlockedImages, setUnlockedImages] = useState<string[]>([]);
-	const [showPostsOfFollowedUsers, setShowPostsOfFollowedUsers] =
-		useState(false);
+	const [showPostsOfFollowedUsers, setShowPostsOfFollowedUsers] = useState(false);
 	const { toast } = useToast();
 
 	useEffect(() => {
-		if (authenticated) {
-			apiFetch("http://localhost:5001/api/users/current")
-				.then((userData) => {
-					setUserId(userData.id);
-					setUnlockedImages(userData.purchasedPostIds || []);
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [authenticated]);
+		if (!authenticated) return;
+	
+		const fetchUserData = async () => {
+		  try {
+			const userData = await apiFetch("http://localhost:5001/api/users/current");
+			setUserId(userData.id);
+			setUnlockedImages(userData.purchasedPostIds || []);
+		  } catch (error) {
+			console.error('Failed to fetch user data:', error);
+		  }
+		};
+	
+		fetchUserData();
+	  }, [authenticated]);
 
-	useEffect(() => {
-		if (authenticated) {
+	  useEffect(() => {
+		if (!authenticated) return;
+	
+		const fetchPosts = async () => {
+		  try {
 			const endpoint = showPostsOfFollowedUsers
-				? "http://localhost:5001/api/posts/feed"
-				: "http://localhost:5001/api/posts/all";
-
-			apiFetch(endpoint)
-				.then((data) => {
-					setPosts(
-						data.sort(
-							(a: any, b: any) =>
-								new Date(b.createdAt).getTime() -
-								new Date(a.createdAt).getTime()
-						)
-					);
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [authenticated, showPostsOfFollowedUsers]);
+			  ? "http://localhost:5001/api/posts/feed"
+			  : "http://localhost:5001/api/posts/all";
+			  
+			const data = await apiFetch(endpoint);
+			setPosts(
+			  data.sort(
+				(a: any, b: any) =>
+				  new Date(b.createdAt).getTime() -
+				  new Date(a.createdAt).getTime()
+			  )
+			);
+		  } catch (error) {
+			console.error('Failed to fetch posts:', error);
+		  }
+		};
+	
+		fetchPosts();
+	  }, [authenticated, showPostsOfFollowedUsers]);
 
 	if (!authenticated) {
 		return null;

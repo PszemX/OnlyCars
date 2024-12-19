@@ -19,28 +19,32 @@ export const useAuth = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
-    const token = Cookies.get("token");
-    const isAuthPage = pathname === '/login' || pathname === '/register';
+    const checkAuth = () => {
+      const token = Cookies.get("token");
+      const isAuthPage = pathname === '/login' || pathname === '/register';
 
-    if (!token || isTokenExpired(token)) {
-      Cookies.remove("token");
-      setAuthenticated(false);
-      setUserId(null);
-      
-      if (!isAuthPage) {
-        router.push("/login");
-      }
-    } else {
-      const decoded = jwtDecode<DecodedToken>(token);
-      setUserId(decoded.nameid);
-      setIsAdmin(decoded.IsAdmin === "true");
-      setAuthenticated(true);
+      if (!token || isTokenExpired(token)) {
+        Cookies.remove("token");
+        setAuthenticated(false);
+        setUserId(null);
+        
+        if (!isAuthPage) {
+          router.push("/login");
+        }
+      } else {
+        const decoded = jwtDecode<DecodedToken>(token);
+        setUserId(decoded.nameid);
+        setIsAdmin(decoded.IsAdmin === "true");
+        setAuthenticated(true);
 
-      if (isAuthPage) {
-        router.push("/");
+        if (isAuthPage) {
+          router.push("/");
+        }
       }
-    }
-  }, [router, pathname]);
+    };
+
+    checkAuth();
+  }, [pathname]); // Only re-run when pathname changes
 
   return { userId, authenticated, isAdmin };
 };
