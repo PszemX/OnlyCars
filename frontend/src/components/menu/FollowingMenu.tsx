@@ -5,10 +5,12 @@ import { useFollowing } from "@/context/FollowingContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 export const FollowingMenu = () => {
 	const { followingUserIds } = useFollowing();
 	const [followingUsers, setFollowingUsers] = useState<any[]>([]);
+	const pathname = usePathname();
 
 	useEffect(() => {
 		const fetchFollowingUsers = async () => {
@@ -28,7 +30,12 @@ export const FollowingMenu = () => {
 	}, [followingUserIds]);
 
 	return (
-		<div className="w-64 bg-white shadow-lg p-4 hidden lg:flex flex-col h-screen fixed top-0 right-0 z-10">
+		<div
+			className={`
+				"w-64 bg-white shadow-lg p-4 hidden flex-col h-screen fixed top-0 right-0 z-10 ${
+					pathname === "/admin-panel" ? "" : "lg:flex"
+				}`}
+		>
 			<h2 className="text-lg font-semibold mb-4">Following</h2>
 			<ScrollArea className="flex-grow">
 				<div className="space-y-4 pr-4">
