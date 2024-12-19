@@ -8,13 +8,15 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FollowingButton from "@/components/button/FollowingButton";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function UserProfile({
 	params,
 }: {
 	params: { userName: string };
 }) {
-	const [tokenBalance, setTokenBalance] = useState(100);
+	const authenticated = useAuth();
+	const [userId, setUserId] = useState("");
 	const [unlockedImages, setUnlockedImages] = useState<number[]>([]);
 	const [currentUser, setCurrentUser] = useState({} as any);
 	const [currentUserPosts, setCurrentUserPosts] = useState([] as any);
@@ -34,6 +36,19 @@ export default function UserProfile({
 		});
 		setLoading(false);
 	}, [params.userName]);
+
+	useEffect(() => {
+		if (authenticated) {
+			apiFetch("http://localhost:5001/api/users/current")
+				.then((userData) => {
+					setUserId(userData.id);
+					setUnlockedImages(userData.purchasedPostIds || []);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [authenticated]);
 
 	useEffect(() => {
 		if (!currentUser || !currentUser.id) return;
@@ -60,21 +75,29 @@ export default function UserProfile({
 		return <p>Loading...</p>;
 	}
 
-	const unlockImage = (postId: number, price: number) => {
-		if (tokenBalance >= price) {
-			setTokenBalance((prev) => prev - price);
-			setUnlockedImages((prev) => [...prev, postId]);
+	const handleUnlockImage = async (postId: number, price: number) => {
+		try {
+			const response = await apiFetch(
+				`http://localhost:5001/api/posts/${postId}/purchase`,
+				{
+					method: "POST",
+				}
+			);
+
+			if (response.message === "Post unlocked.") {
+				setUnlockedImages((prev) => [...prev, postId]);
+				toast({
+					title: "Image Unlocked!",
+					description: `You've successfully unlocked the image for ${price} tokens.`,
+					duration: 3000,
+				});
+			} else {
+				throw new Error(response.message || "Unable to unlock image.");
+			}
+		} catch (error: any) {
 			toast({
-				title: "Image Unlocked!",
-				description: `You've successfully unlocked the image for ${price} tokens.`,
-				duration: 3000,
-			});
-		} else {
-			toast({
-				title: "Insufficient Tokens",
-				description: `You need ${
-					price - tokenBalance
-				} more tokens to unlock this image.`,
+				title: "Error",
+				description: "Not enough tokens!",
 				variant: "destructive",
 				duration: 3000,
 			});
@@ -130,11 +153,12 @@ export default function UserProfile({
 								<PhotoCard
 									key={post.id}
 									post={post}
-									isUnlocked={unlockedImages.includes(
-										post.id
-									)}
+									isUnlocked={
+										unlockedImages.includes(post.id) ||
+										post.userId === userId
+									}
 									onUnlock={() =>
-										unlockImage(post.id, post.price)
+										handleUnlockImage(post.id, post.price)
 									}
 									onOpenPost={() =>
 										console.log("Post Opened", post.id)

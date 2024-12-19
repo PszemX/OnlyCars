@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 export default function OnlyCars() {
 	const authenticated = useAuth();
 	const [posts, setPosts] = useState([]);
+	const [userId, setUserId] = useState("");
 	const [unlockedImages, setUnlockedImages] = useState<string[]>([]);
 	const [showPostsOfFollowedUsers, setShowPostsOfFollowedUsers] =
 		useState(false);
@@ -21,6 +22,7 @@ export default function OnlyCars() {
 		if (authenticated) {
 			apiFetch("http://localhost:5001/api/users/current")
 				.then((userData) => {
+					setUserId(userData.id);
 					setUnlockedImages(userData.purchasedPostIds || []);
 				})
 				.catch((error) => {
@@ -81,7 +83,7 @@ export default function OnlyCars() {
 		} catch (error: any) {
 			toast({
 				title: "Error",
-				description: error.message || "An error occurred.",
+				description: "Not enough tokens!",
 				variant: "destructive",
 				duration: 3000,
 			});
@@ -115,9 +117,10 @@ export default function OnlyCars() {
 								<PhotoCard
 									key={post.id}
 									post={post}
-									isUnlocked={unlockedImages.includes(
-										post.id
-									)}
+									isUnlocked={
+										unlockedImages.includes(post.id) ||
+										post.userId === userId
+									}
 									onUnlock={() =>
 										handleUnlockImage(post.id, post.price)
 									}
