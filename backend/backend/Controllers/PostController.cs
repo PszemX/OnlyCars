@@ -124,6 +124,9 @@ namespace backend.Controllers
             {
                 user.LikedPostIds.Add(postId);
                 await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
+
+                var update = Builders<Post>.Update.Inc(p => p.Likes, 1);
+                await _postsCollection.UpdateOneAsync(p => p.Id == postId, update);
             }
 
             return Ok(new { message = "Post liked." });
@@ -143,6 +146,9 @@ namespace backend.Controllers
             {
                 user.LikedPostIds.Remove(postId);
                 await _usersCollection.ReplaceOneAsync(u => u.Id == user.Id, user);
+
+                var update = Builders<Post>.Update.Inc(p => p.Likes, -1);
+                await _postsCollection.UpdateOneAsync(p => p.Id == postId, update);
             }
 
             return Ok(new { message = "Post unliked." });
