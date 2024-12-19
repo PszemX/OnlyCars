@@ -36,8 +36,8 @@ export const TokensModal = () => {
 			const siteBalance = await apiFetch(
 				"http://localhost:5001/api/tokens/user-site-balance"
 			);
-			setCurrentWalletBalance(walletBalance.balance);
-			setCurrentSiteBalance(siteBalance.balance);
+			setCurrentWalletBalance(walletBalance.balance || 0);
+			setCurrentSiteBalance(siteBalance.balance || 0);
 		} catch (error) {
 			console.error("Error refreshing balances:", error);
 		}
@@ -105,13 +105,6 @@ export const TokensModal = () => {
 			setIsLoading(false);
 		}
 	};
-
-	if (
-		currentWalletBalance === undefined ||
-		currentSiteBalance === undefined
-	) {
-		return "Loading...";
-	}
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
@@ -231,16 +224,6 @@ export const TokensModal = () => {
 									/>
 								</div>
 							</div>
-							{/* <Label htmlFor="private-key">Private Key</Label>
-							<Input
-								type="text"
-								value={privateKey}
-								onChange={(e) =>
-									setPrivateKey(String(e.target.value))
-								}
-								className="w-full"
-								style={{ marginTop: 8 }}
-							/> */}
 						</div>
 						<DialogFooter>
 							<Button
