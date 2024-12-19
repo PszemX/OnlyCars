@@ -264,7 +264,7 @@ namespace backend.Controllers
 
         [Authorize]
         [HttpPatch("update")]
-        public async Task<IActionResult> UpdateUser([FromBody] UserUpdateDto updateDto)
+        public async Task<IActionResult> UpdateUser([FromForm] UserUpdateDto updateDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var user = await _userRepository.GetUserByIdAsync(userId);
@@ -301,12 +301,12 @@ namespace backend.Controllers
                 updateDefinition.Add(update.Set(u => u.WalletAddress, updateDto.WalletAddress));
             }
 
-             if (updateDto.ProfilePicture != null)
+             if (updateDto.ProfilePictureUrl != null)
             {
-                if (!ImageHelper.IsValidImage(updateDto.ProfilePicture))
+                if (!ImageHelper.IsValidImage(updateDto.ProfilePictureUrl))
                     return BadRequest(new { message = "Invalid image format" });
 
-                if (!ImageHelper.IsValidImageSize(updateDto.ProfilePicture))
+                if (!ImageHelper.IsValidImageSize(updateDto.ProfilePictureUrl))
                     return BadRequest(new { message = "Profile picture is too large" });
 
                 if (!string.IsNullOrEmpty(user.ProfilePictureUrl))
@@ -314,7 +314,7 @@ namespace backend.Controllers
                     await _storage.DeleteImageAsync(user.ProfilePictureUrl);
                 }
 
-                var imageUrl = await _storage.UploadImageAsync(updateDto.ProfilePicture);
+                var imageUrl = await _storage.UploadImageAsync(updateDto.ProfilePictureUrl);
                 updateDefinition.Add(update.Set(u => u.ProfilePictureUrl, imageUrl));
             }
 
