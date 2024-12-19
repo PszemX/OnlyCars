@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 
 interface DecodedToken {
   nameid: string;
+  IsAdmin: string;
 }
 
 export const useAuth = () => {
@@ -15,6 +16,7 @@ export const useAuth = () => {
   const pathname = usePathname();
   const [userId, setUserId] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const token = Cookies.get("token");
@@ -31,6 +33,7 @@ export const useAuth = () => {
     } else {
       const decoded = jwtDecode<DecodedToken>(token);
       setUserId(decoded.nameid);
+      setIsAdmin(decoded.IsAdmin === "true");
       setAuthenticated(true);
 
       if (isAuthPage) {
@@ -39,5 +42,5 @@ export const useAuth = () => {
     }
   }, [router, pathname]);
 
-  return { userId, authenticated };
+  return { userId, authenticated, isAdmin };
 };
