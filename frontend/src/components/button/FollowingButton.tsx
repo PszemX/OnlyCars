@@ -1,15 +1,22 @@
 "use client";
 import { apiFetch } from "@/lib/utils";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Toaster } from "../ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useFollowing } from "@/context/FollowingContext";
 
 const FollowingButton = ({ userId }: { userId: string }) => {
+	const [currentUser, setCurrentUser] = useState(null as any);
 	const { isFollowing, addFollowingUser, removeFollowingUser } =
 		useFollowing();
 	const { toast } = useToast();
+
+	useEffect(() => {
+		apiFetch("http://localhost:5001/api/users/current").then((userData) => {
+			setCurrentUser(userData);
+		});
+	}, []);
 
 	const onToggleFollow = async () => {
 		if (isFollowing(userId)) {
@@ -63,7 +70,7 @@ const FollowingButton = ({ userId }: { userId: string }) => {
 	};
 
 	return (
-		<div>
+		<div className={`${userId === currentUser?.id ? "hidden" : ""}`}>
 			<Button
 				variant={isFollowing(userId) ? "outline" : "default"}
 				size="sm"

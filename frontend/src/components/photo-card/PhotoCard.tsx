@@ -8,28 +8,25 @@ import {
 	CardHeader,
 	CardFooter,
 } from "@/components/ui/card";
-import { Heart, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { PostModal } from "@/components/posts/PostModal";
 import { apiFetch } from "@/lib/utils";
 import FollowingButton from "../button/FollowingButton";
+import LikeButton from "../button/LikeButton";
 
 interface PhotoCardProps {
 	post: any;
 	isUnlocked: boolean;
-	isLiked: boolean;
 	onUnlock: () => void;
 	onOpenPost: (post: any) => void;
-	onToggleLike: () => void;
 }
 
 export const PhotoCard = ({
 	post,
 	isUnlocked,
-	isLiked,
 	onUnlock,
 	onOpenPost,
-	onToggleLike,
 }: PhotoCardProps) => {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [user, setUser] = useState(null as any);
@@ -90,17 +87,7 @@ export const PhotoCard = ({
 				</CardContent>
 				<CardFooter className="flex flex-col items-start p-4">
 					<div className="flex items-center space-x-4 w-full">
-						<Button
-							variant="ghost"
-							size="icon"
-							onClick={onToggleLike}
-						>
-							<Heart
-								className={`h-4 w-4 ${
-									isLiked ? "text-red-500 fill-red-500" : ""
-								}`}
-							/>
-						</Button>
+						<LikeButton postId={post.id} />
 						<Button
 							variant="ghost"
 							size="icon"
@@ -110,7 +97,7 @@ export const PhotoCard = ({
 						</Button>
 					</div>
 					<p className="text-sm font-semibold mt-2">
-						{post.likes + (isLiked ? 1 : 0)} likes
+						{post.likes} likes
 					</p>
 					<p className="text-sm mt-1">
 						<span className="font-semibold">{user?.userName}</span>{" "}
@@ -129,10 +116,8 @@ export const PhotoCard = ({
 				<PostModal
 					post={post}
 					isUnlocked={isUnlocked}
-					isLiked={isLiked}
 					onClose={() => setIsModalOpen(false)}
 					onUnlock={onUnlock}
-					onToggleLike={onToggleLike}
 				/>
 			)}
 		</>

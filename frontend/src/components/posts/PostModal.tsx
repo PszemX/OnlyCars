@@ -9,27 +9,24 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Heart, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/utils";
 import FollowingButton from "../button/FollowingButton";
+import LikeButton from "../button/LikeButton";
 
 interface PostModalProps {
 	post: any;
 	isUnlocked: boolean;
-	isLiked: boolean;
 	onClose: () => void;
 	onUnlock: () => void;
-	onToggleLike: () => void;
 }
 
 export const PostModal = ({
 	post,
 	isUnlocked,
-	isLiked,
 	onClose,
 	onUnlock,
-	onToggleLike,
 }: PostModalProps) => {
 	const [newComment, setNewComment] = useState("");
 	const [user, setUser] = useState(null as any);
@@ -136,25 +133,13 @@ export const PostModal = ({
 						</ScrollArea>
 						<div className="p-4 border-t">
 							<div className="flex items-center space-x-4 mb-4">
-								<Button
-									variant="ghost"
-									size="icon"
-									onClick={onToggleLike}
-								>
-									<Heart
-										className={`h-4 w-4 ${
-											isLiked
-												? "text-red-500 fill-red-500"
-												: ""
-										}`}
-									/>
-								</Button>
+								<LikeButton postId={post.id} />
 								<Button variant="ghost" size="icon">
 									<MessageCircle className="h-4 w-4" />
 								</Button>
 							</div>
 							<p className="text-sm font-semibold mb-2">
-								{post.likes + (isLiked ? 1 : 0)} likes
+								{post.likes} likes
 							</p>
 							<div className="flex items-center">
 								<Input

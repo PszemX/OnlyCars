@@ -13,7 +13,6 @@ export default function OnlyCars() {
 	const authenticated = useAuth();
 	const [posts, setPosts] = useState([]);
 	const [unlockedImages, setUnlockedImages] = useState<string[]>([]);
-	const [likedPosts, setLikedPosts] = useState<string[]>([]);
 	const [showAllPosts, setShowAllPosts] = useState(true);
 	const { toast } = useToast();
 
@@ -21,7 +20,6 @@ export default function OnlyCars() {
 		if (authenticated) {
 			apiFetch("http://localhost:5001/api/users/current")
 				.then((userData) => {
-					setLikedPosts(userData.likedPostIds || []);
 					setUnlockedImages(userData.purchasedPostIds || []);
 				})
 				.catch((error) => {
@@ -83,21 +81,6 @@ export default function OnlyCars() {
 		}
 	};
 
-	const handleLikePost = async (postId: string) => {
-		try {
-			await apiFetch(`http://localhost:5001/api/posts/${postId}/like`, {
-				method: "POST",
-			});
-			setLikedPosts((prev) =>
-				prev.includes(postId)
-					? prev.filter((id) => id !== postId)
-					: [...prev, postId]
-			);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
 	return (
 		<>
 			<div className="min-h-screen bg-gray-100 flex">
@@ -124,12 +107,10 @@ export default function OnlyCars() {
 									isUnlocked={unlockedImages.includes(
 										post.id
 									)}
-									isLiked={likedPosts.includes(post.id)}
 									onUnlock={() =>
 										handleUnlockImage(post.id, post.price)
 									}
 									onOpenPost={() => {}}
-									onToggleLike={() => handleLikePost(post.id)}
 								/>
 							))}
 						</div>

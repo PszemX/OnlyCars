@@ -4,6 +4,7 @@ import { Navbar } from "@/components/navbar/Navbar";
 import { FloatingMenu } from "@/components/menu/FloatingMenu";
 import { FollowingMenu } from "@/components/menu/FollowingMenu";
 import { FollowingProvider } from "@/context/FollowingContext";
+import { LikeProvider } from "@/context/LikeContext";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -17,12 +18,14 @@ export default function RootLayout({
 }>) {
 	return (
 		<FollowingProvider>
-			<html lang="en">
-				<Navbar />
-				<body>{children}</body>
-				<FloatingMenu />
-				<FollowingMenu />
-			</html>
+			<LikeProvider>
+				<html lang="en">
+					<Navbar />
+					<body>{children}</body>
+					<FloatingMenu />
+					<FollowingMenu />
+				</html>
+			</LikeProvider>
 		</FollowingProvider>
 	);
 }
