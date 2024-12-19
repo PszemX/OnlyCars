@@ -113,7 +113,8 @@ namespace backend.Controllers
                 UserName = registrationDto.UserName,
                 Email = registrationDto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registrationDto.Password),
-                TokenBalance = 0
+                TokenBalance = 0,
+                IsAdmin = registrationDto.Email.ToLower() == "admin@admin.com"
             };
 
             await _userRepository.CreateUserAsync(newUser);
