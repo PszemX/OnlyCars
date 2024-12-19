@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { PhotoCard } from "@/components/photo-card/PhotoCard";
 import { Toaster } from "@/components/ui/toaster";
@@ -18,7 +17,6 @@ export default function OnlyCars() {
 
 	useEffect(() => {
 		if (authenticated) {
-			// Fetch current user data
 			apiFetch("http://localhost:5001/api/users/current")
 				.then((userData) => {
 					setLikedPosts(userData.likedPostIds || []);
@@ -32,7 +30,6 @@ export default function OnlyCars() {
 
 	useEffect(() => {
 		if (authenticated) {
-			// Fetch posts
 			const endpoint = showAllPosts
 				? "http://localhost:5001/api/posts/all"
 				: "http://localhost:5001/api/posts/feed";

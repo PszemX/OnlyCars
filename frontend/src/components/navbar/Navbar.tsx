@@ -22,7 +22,6 @@ export const Navbar = () => {
 
 	const handleDepositTokens = () => {
 		console.log("Deposit");
-		// router.push("/buy-tokens");
 	};
 
 	const handleWithdrawTokens = () => {

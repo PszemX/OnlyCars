@@ -1,5 +1,3 @@
-// lib/utils.ts
-
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { jwtDecode } from "jwt-decode";
@@ -26,7 +24,7 @@ export async function apiFetch(url: string, options = {}) {
 
 	const response = await fetch(url, {
 		...options,
-		headers, // Przeglądarka sama ustawi Content-Type dla FormData
+		headers,
 	});
 
 	if (!response.ok) {

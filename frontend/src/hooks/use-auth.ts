@@ -7,8 +7,7 @@ import { isTokenExpired } from "@/lib/utils";
 import { jwtDecode } from "jwt-decode";
 
 interface DecodedToken {
-	nameid: string; // This will contain the userId
-	// Add other claims you expect from your token
+	nameid: string;
 }
 
 export const useAuth = () => {

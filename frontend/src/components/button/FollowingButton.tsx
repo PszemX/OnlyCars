@@ -24,7 +24,7 @@ const FollowingButton = ({ userId }: { userId: string }) => {
 			await apiFetch(`http://localhost:5001/api/users/follow/${userId}`, {
 				method: "POST",
 			});
-			addFollowingUser(userId); // Aktualizuje globalny kontekst
+			addFollowingUser(userId);
 			toast({
 				title: "Succesfully followed user!",
 				duration: 3000,
@@ -47,7 +47,7 @@ const FollowingButton = ({ userId }: { userId: string }) => {
 					method: "POST",
 				}
 			);
-			removeFollowingUser(userId); // Aktualizuje globalny kontekst
+			removeFollowingUser(userId);
 			toast({
 				title: "Succesfully unfollowed user!",
 				duration: 3000,

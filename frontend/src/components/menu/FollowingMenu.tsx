@@ -11,7 +11,6 @@ export const FollowingMenu = () => {
 	const [followingUsers, setFollowingUsers] = useState<any[]>([]);
 
 	useEffect(() => {
-		// Funkcja pobierająca szczegóły użytkowników na podstawie ich identyfikatorów
 		const fetchFollowingUsers = async () => {
 			const userDetails = await Promise.all(
 				followingUserIds.map((id) =>
