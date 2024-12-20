@@ -64,7 +64,6 @@ export const PostModal = ({
 			);
 			setComments(data);
 
-			// Fetch user info for each comment
 			const userPromises = data.map((comment: Comment) =>
 				apiFetch(`http://localhost:5001/api/users/${comment.userId}`, {
 					method: "GET",
@@ -90,7 +89,6 @@ export const PostModal = ({
 		if (!trimmedComment) return;
 
 		try {
-			// First get current user to have their info ready
 			const currentUser = await apiFetch(
 				`http://localhost:5001/api/users/current`,
 				{
@@ -107,7 +105,6 @@ export const PostModal = ({
 				}
 			);
 
-			// Refresh comments to get the new comment with correct ID
 			const updatedComments = await apiFetch(
 				`http://localhost:5001/api/posts/${post.id}/comments`,
 				{

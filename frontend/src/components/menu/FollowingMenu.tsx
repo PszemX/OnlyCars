@@ -47,10 +47,7 @@ export const FollowingMenu = () => {
 						>
 							<Avatar>
 								<AvatarImage
-									src={
-										user?.profilePicture //||
-										//"/placeholder.svg?height=40&width=40"
-									}
+									src={user?.profilePicture}
 									alt={user?.userName}
 								/>
 								<AvatarFallback>

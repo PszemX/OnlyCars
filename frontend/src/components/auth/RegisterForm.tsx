@@ -57,9 +57,8 @@ export default function RegisterForm() {
 			}
 
 			setSuccessMessage("Registration successful.");
-			await new Promise(resolve => setTimeout(resolve, 2000));
-			// Then redirect
-			router.push('/login');
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			router.push("/login");
 		} catch (err: any) {
 			setError(err.message || "An error occurred during registration");
 		}

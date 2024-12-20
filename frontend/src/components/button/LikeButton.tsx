@@ -18,7 +18,6 @@ const LikeButton = ({ postId }: { postId: string }) => {
 				await likePost();
 			}
 			toggleLike(postId);
-			//await refreshLikes();
 		} catch (error) {
 			console.error("Error toggling like:", error);
 		}

@@ -5,7 +5,6 @@ import { apiFetch } from "@/lib/utils";
 interface LikeContextType {
 	isLiked: (postId: string) => boolean;
 	toggleLike: (postId: string) => void;
-	//refreshLikes: () => void;
 }
 
 const LikeContext = createContext<LikeContextType | undefined>(undefined);
@@ -40,10 +39,6 @@ export const LikeProvider = ({ children }: { children: React.ReactNode }) => {
 				: [...prev, postId]
 		);
 	};
-
-	// const refreshLikes = async () => {
-	// 	await fetchLikedPosts();
-	// };
 
 	return (
 		<LikeContext.Provider value={{ isLiked, toggleLike }}>
