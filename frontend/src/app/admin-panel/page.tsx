@@ -36,6 +36,8 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { apiFetch } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import UnauthorizedPage from "./UnAuthorizedPage";
 
 export type User = {
 	userId: string;
@@ -45,6 +47,7 @@ export type User = {
 };
 
 const AdminPanelPage = () => {
+	const { isAdmin } = useAuth();
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] =
 		React.useState<ColumnFiltersState>([]);
@@ -156,6 +159,10 @@ const AdminPanelPage = () => {
 			rowSelection,
 		},
 	});
+
+	if (!isAdmin) {
+		return <UnauthorizedPage />;
+	}
 
 	if (isLoading) {
 		return <p>Loading...</p>;

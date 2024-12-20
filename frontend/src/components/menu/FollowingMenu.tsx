@@ -33,7 +33,7 @@ export const FollowingMenu = () => {
 		<div
 			className={`
 				"w-64 bg-white shadow-lg p-4 hidden flex-col h-screen fixed top-0 right-0 z-10 ${
-					pathname === "/admin-panel" ? "" : "lg:flex"
+					pathname === "/admin-panel" ? "" : "lg:flex w-[250px]"
 				}`}
 		>
 			<h2 className="text-lg font-semibold mb-4">Following</h2>
