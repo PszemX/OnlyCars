@@ -37,12 +37,12 @@ export const PhotoCard = ({
 
 	useEffect(() => {
 		const fetchUser = async () => {
-			apiFetch(`http://localhost:5001/api/users/${post.userId}`, {
-				method: "GET",
-			}).then((data) => setUser(data));
+		  const data = await apiFetch(`http://localhost:5001/api/users/${post.userId}`);
+		  setUser(data);
 		};
 		fetchUser();
-	}, [post.userId, post]);
+	  }, [post.userId]); // Only re-run when post.userId changes
+	
 
 	return (
 		<>

@@ -13,16 +13,13 @@ export const Navbar = () => {
 	const pathname = usePathname();
 
 	useEffect(() => {
-		apiFetch("http://localhost:5001/api/users/current").then((userData) => {
-			setCurrentUser(userData);
-		});
-	}, []);
-
-	useEffect(() => {
-		if (currentUser) setTokenBalance(currentUser.tokenBalance);
-	}, [currentUser]);
-
-	if (!currentUser) return <div>Loading...</div>;
+		const fetchUser = async () => {
+		  const userData = await apiFetch("http://localhost:5001/api/users/current");
+		  setCurrentUser(userData);
+		  setTokenBalance(userData.tokenBalance);
+		};
+		fetchUser();
+	  }, []); // Empty dependency array - runs once
 
 	return (
 		<header className="bg-white shadow-sm sticky top-0 z-10">

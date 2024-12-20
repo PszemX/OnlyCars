@@ -14,20 +14,21 @@ export const FollowingMenu = () => {
 
 	useEffect(() => {
 		const fetchFollowingUsers = async () => {
+		  if (followingUserIds.length > 0) {
 			const userDetails = await Promise.all(
-				followingUserIds.map((id) =>
-					apiFetch(`http://localhost:5001/api/users/${id}`)
-				)
+			  followingUserIds.map((id) =>
+				apiFetch(`http://localhost:5001/api/users/${id}`)
+			  )
 			);
 			setFollowingUsers(userDetails);
-		};
-
-		if (followingUserIds.length > 0) {
-			fetchFollowingUsers();
-		} else {
+		  } else {
 			setFollowingUsers([]);
-		}
-	}, [followingUserIds]);
+		  }
+		};
+		
+		fetchFollowingUsers();
+	  }, [followingUserIds]); // Only re-run when followingUserIds changes
+	
 
 	return (
 		<div

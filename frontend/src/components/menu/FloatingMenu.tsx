@@ -22,12 +22,12 @@ export const FloatingMenu = () => {
 	const [currentUser, setCurrentUser] = useState("" as any);
 
 	useEffect(() => {
-		apiFetch("http://localhost:5001/api/users/current").then(
-			(userData: any) => {
-				setCurrentUser(userData);
-			}
-		);
-	}, []);
+		const fetchUser = async () => {
+		  const userData = await apiFetch("http://localhost:5001/api/users/current");
+		  setCurrentUser(userData);
+		};
+		fetchUser();
+	  }, []); // Empty dependency array - runs once
 
 	const handleLogout = () => {
 		Cookies.remove("token");

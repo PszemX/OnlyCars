@@ -17,21 +17,29 @@ export function LayoutClient({
   const pathname = usePathname();
   const isAuthPage = pathname === '/login' || pathname === '/register';
 
+  // If it's an auth page or not authenticated, render children without providers
+  if (isAuthPage || !authenticated) {
+    return (
+      <html lang="en">
+        <body>
+          {children}
+        </body>
+      </html>
+    );
+  }
+
+  // Only render providers when authenticated
   return (
     <html lang="en">
       <body>
-        {!isAuthPage && authenticated ? (
-          <FollowingProvider>
-            <LikeProvider>
-              <Navbar />
-              {children}
-              <FloatingMenu />
-              <FollowingMenu />
-            </LikeProvider>
-          </FollowingProvider>
-        ) : (
-          children
-        )}
+        <FollowingProvider>
+          <LikeProvider>
+            <Navbar />
+            {children}
+            <FloatingMenu />
+            <FollowingMenu />
+          </LikeProvider>
+        </FollowingProvider>
       </body>
     </html>
   );
